@@ -84,6 +84,7 @@ class DropShipRabbitScrapper:
 
         time.sleep(5)
 
+
         extract_all_items()
 
         # Get the position based on results
