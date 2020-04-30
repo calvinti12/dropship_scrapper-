@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "booming-primer-264712",
+  "private_key_id": "b8fc560d4fe815df7493eed309f60fb6fdb28dce",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCyrvOvDqkn3epa\nfKvkkTzEWPX960FIaQM8rgfVhlv8zhgucjDdcIlTCK1Jrq95/hXX7hCbUlBCvbW+\nvuAFMjkQ+uCuOGA8WYnbSqKTx55bPA0YPiVx5wn8qhAMwCgt8IPuUuy2r0CxKDek\ny97mEhEQuYcM/8EshMjkG6XwE6xxvqQnZezoPHYvVOo0VkwOx8TNmpl3rBakaFvu\nOSrww3gd5Oy26+7Gnf92AB3+jadYfaiV86lv9JINX2jUCFgPqOoUj2HmQi9v+yDC\n4w3eWmnL6cZY16R0rQLAPE8sXnCy8aJfGlTi8wtdm96l7q2r67tqdr8cKhOHwYeB\n9u52cSYfAgMBAAECggEABpFGBT0otbDP/rUH+SxNa3oWY74Hddd5di8Y72qZnvHq\nrNDA2W+PD8cJERg8/Hx8sqV3y5dIhx6p7qTdXwa4vW/Uw99WlvrdHxSsyeAgaRum\nVfaSy1woLDbXK2DOTHUp12yjPrCAupvPAvbRu1F9E+KxA0CACfIN4DR6WOSgOSrI\nCer2dwO/XGOgAfe0KhdkyrjXo9k/C+pCYzXZGQ35kK5EI6LBETiOi99LO9zn7Ic4\n5sklH8Zoq4U97dB5PtfnbKP4aYTCyrqdFT9D1A9OOJuzBaxHfb3VxmxjxWYZ6GCg\nVjPzfFXuuULOWqyeLNnnKCSUQ+n+GmnF4Sn3OCDt4QKBgQDtjde3nE8JB4mX2r1O\nV+WaatWO1UIPgbbNhLeDRPE4pHlKZTj72v8Yi8ZBrFvdj0tJFnfY7XTTH0G3rciB\nApnKpRuhudB93N16zqtd3nsLOdGV+e3eVcTsupX9KjhJouoFS4U0OV6j8tUlMhlx\nUI7xxY8gkb+jwR+GWzPX7TbBkwKBgQDAjt0nDtEd5pr8u+nKQW460z/m2hgZdjdO\nPBR0WYiuULaJNKd7Nm/o6OzXTzQxBQ7EYBAvzmNNIuGZBMAnCzyJ0xOmQPrM67qe\nO1f3Z4VYHkLS9MujN5eJdDPnM4SD5dhEA2XYnmBM+eAESMBQsOLH5XbWWPLEVEq9\nwdueWRcQxQKBgQCI7JwtUiRgMP8HD2bUVGechP3JUXS9WWgTt+7K9B8SJgNfdU7O\nJKGq9U32JrHg2Cpt20yDNgODeV240KtkaSpaGqb9pgvdsEPc+GjgN0+23cHHb4LD\nB671QGsZvI8rKoM3QBtsSbEaUOq4gNMXdHagNt5TyI6shbF1EPal/C32jwKBgQCh\nZh4QYub8/RHjzU5E7VsLi44AXcXdca0hslIiw/lAwv59Otk2+YYL31DFl+nTPL4H\n880dhQzO1vHpZIX7M/vmOjo6HDUcFmoxvuQYx3iJR7QTRoR5plsqJ3Bp1lC4jasc\nNwzi6L0nSDpw3Nn1yI4Np1RYje3OiiirrRX8QAiJUQKBgQDWiFxnUG11A9DUv5gr\n2kUkqE3Vy16zF/CCZgZeGcU8YA432P3ea+IodvLIHvOZzDFxKNsjbWpc5OuR88HP\nmQ++jmeookDs8jw75oEcYuGNjGOqkv/wwQzpDNxddz29LGoMfIZF2bi+ZD+7340f\n55PkDfrklGX7VbPrShP3zFzs9g==\n-----END PRIVATE KEY-----\n",
+  "client_email": "google-sheets@booming-primer-264712.iam.gserviceaccount.com",
+  "client_id": "106059504003159462641",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-sheets%40booming-primer-264712.iam.gserviceaccount.com"
+}
