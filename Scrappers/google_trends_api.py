@@ -11,6 +11,5 @@ class GoogleTrends:
     def get_interest_over_time(self):
         return pytrend.interest_over_time()
 
-
     def get_historical_interest(self, kw_list, year_start, month_start ,day_start ,hour_start,year_end,month_end,day_end,hour_end,sleep):
         return pytrend.get_historical_interest(kw_list, year_start=year_start, month_start=month_start, day_start=day_start, hour_start=hour_start, year_end=year_end, month_end=month_end, day_end=day_end, hour_end=hour_end, cat=0, geo='', gprop='', sleep=sleep)

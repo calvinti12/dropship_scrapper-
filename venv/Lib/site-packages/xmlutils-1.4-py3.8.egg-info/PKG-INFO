@@ -1,0 +1,21 @@
+Metadata-Version: 1.1
+Name: xmlutils
+Version: 1.4
+Summary: A set of utilities for processing XML documents and converting to other formats
+Home-page: http://nadh.in/code/xmlutils.py
+Author: Kailash Nadh
+Author-email: kailash.nadh@gmail.com
+License: MIT License
+Download-URL: http://github.com/knadh/xmlutils.py
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python
+Classifier: Natural Language :: English
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Text Processing :: Markup :: XML
+Classifier: Topic :: Software Development :: Libraries

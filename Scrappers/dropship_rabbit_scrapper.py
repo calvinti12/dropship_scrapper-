@@ -2,18 +2,18 @@ from selenium import webdriver
 import time
 import random
 global driver
-global sheet
+global sites_worksheet
 # Print data for testing
 
 
 def extract_all_items():
 
-
     item = extract_item()
     if item:
-        sheet.add_product_to_sheet(item)
+        sites_worksheet.add_product_to_sheet(item)
 
-driver.find_element_by_class_name('next')
+    driver.find_element_by_class_name('next')
+
 
 def extract_item():
     try:
@@ -29,6 +29,7 @@ def extract_item():
         return item
     except Exception as e:
         print("Cant extract_item item", e)
+
 
 def get_alibaba_link():
     try:
@@ -58,7 +59,7 @@ class DropShipRabbitScrapper:
     FIRST_ITEM = "//*[@id='Content']/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/ul[1]/li[1]/div[2]/h4[1]/a[1]"
 
     def __init__(self, username, password, _sheet):
-        global sheet
+        global sites_worksheet
         global driver
         sheet = _sheet
         # Don't show the Chrome browser
@@ -83,7 +84,6 @@ class DropShipRabbitScrapper:
         driver.find_element_by_xpath(self.FIRST_ITEM).click()
 
         time.sleep(5)
-
 
         extract_all_items()
 

@@ -1,0 +1,6 @@
+[console_scripts]
+xml2csv = xmlutils.console:run_xml2csv
+xml2json = xmlutils.console:run_xml2json
+xml2sql = xmlutils.console:run_xml2sql
+xmltable2csv = xmlutils.console:run_xmltable2csv
+
