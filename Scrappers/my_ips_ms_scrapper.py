@@ -3,7 +3,6 @@ from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from fake_useragent import UserAgent
 import time
-import random
 global driver
 global actions
 global sites_worksheet
