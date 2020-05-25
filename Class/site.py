@@ -1,6 +1,6 @@
 class Site:
-    def __init__(self, name, link, daily_visitors, monthly_visitors):
-        self.name = name
+    def __init__(self, ranking, link, daily_visitors, monthly_visitors):
+        self.ranking = ranking
         self.link = link
         self.daily_visitors = daily_visitors
         self.monthly_visitors = monthly_visitors
@@ -13,8 +13,11 @@ class Site:
 
     def add_stats(self, stats):
         self.stats = stats
-        self.last90days_rank = stats[0]["rank"]
-        self.today_rank = stats[3]["rank"]
+        try:
+            self.last90days_rank = stats[0]["rank"]
+            self.today_rank = stats[3]["rank"]
+        except Exception as e:
+            print(f"Cant add_stats to site - {self.link}", e)
 
     def set_products(self, number_of_products, avg_product_price, median_product_price):
         self.number_of_products = number_of_products

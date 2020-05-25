@@ -14,7 +14,18 @@ def get_rank(site):
                             "content-type": "content_type"})
     soup = BeautifulSoup(response.text.encode('utf-8'), 'xml')
     site_stats = []
-    for stats in soup.find_all('UsageStatistic'):
+    try:
+        site_usage_statistic = soup.find_all('UsageStatistic')
+        for stats in site_usage_statistic:
+            site_stats.append(extract_stats(stats))
+    except Exception as e:
+        print("Cant extract UsageStatistic", e)
+
+    return site_stats
+
+
+def extract_stats(stats):
+    try:
         stat = {
             "time_frame": '',
             "rank": stats.Rank.Value.get_text(),
@@ -34,8 +45,10 @@ def get_rank(site):
             stat["time_frame"] = stats.TimeRange.Months.get_text()
         else:
             stat["time_frame"] = stats.TimeRange.Days.get_text()
-        site_stats.append(stat)
-    return site_stats
+        return stat
+    except Exception as e:
+        print("Cant extract_stats item", e)
+        return []
 
 
 class Awis_api:

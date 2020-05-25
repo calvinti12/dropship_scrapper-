@@ -2,16 +2,13 @@ from selenium import webdriver
 import time
 import random
 global driver
-global sites_worksheet
+global my_ips_sites_worksheet
 # Print data for testing
 
 
 def extract_all_items():
 
     item = extract_item()
-    if item:
-        sites_worksheet.add_product_to_sheet(item)
-
     driver.find_element_by_class_name('next')
 
 
@@ -59,7 +56,7 @@ class DropShipRabbitScrapper:
     FIRST_ITEM = "//*[@id='Content']/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/ul[1]/li[1]/div[2]/h4[1]/a[1]"
 
     def __init__(self, username, password, _sheet):
-        global sites_worksheet
+        global my_ips_sites_worksheet
         global driver
         sheet = _sheet
         # Don't show the Chrome browser

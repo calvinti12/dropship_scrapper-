@@ -11,7 +11,7 @@ import time
 import random
 global driver
 global actions
-global sites_worksheet
+global my_ips_sites_worksheet
 
 
 def send_keys_decimal(text, element):
@@ -42,7 +42,7 @@ class NicheScrapper:
         # Don't show the Chrome browser
         options = webdriver.ChromeOptions()
         options.add_argument('no-sandbox')
-        # options.add_argument("headless")
+        options.add_argument("headless")
 
         driver = webdriver.Chrome(executable_path=r"chromedriver.exe", chrome_options=options)
         actions = ActionChains(driver)
@@ -56,31 +56,31 @@ class NicheScrapper:
         driver.get('https://nichescraper.com/analysis/?site=' + site.link)
         number_of_best_sellers_products = 0
         try:
-            element_present = ec.presence_of_element_located((By.CLASS_NAME, 'b-product-results'))
-            WebDriverWait(driver, 15).until(element_present)
+            element_present = ec.presence_of_element_located((By.CLASS_NAME, 'product-col'))
+            WebDriverWait(driver, 10).until(element_present)
             print("Page is ready!")
             time.sleep(2)
-            body = driver.find_element_by_css_selector('body')
-            body.send_keys(Keys.PAGE_DOWN)
-            time.sleep(3)
-            body = driver.find_element_by_css_selector('body')
-            body.send_keys(Keys.PAGE_DOWN)
-            time.sleep(3)
+            # body = driver.find_element_by_css_selector('body')
+            # body.send_keys(Keys.PAGE_DOWN)
+            # time.sleep(3)
+            # body = driver.find_element_by_css_selector('body')
+            # body.send_keys(Keys.PAGE_DOWN)
+            # time.sleep(3)
 
             best_sellers = driver.find_elements_by_class_name('b-product-results')
             products = best_sellers[0].text.split('\n')
             prices = []
             product_avg = 0
             i = 1
-            while i <= len(products):
+            while i <= len(products) and len(products) > 1:
                 price = float(re.sub("[^\d\.]", "", products[i]))
                 product_avg += price
                 prices.append(price)
                 i += 2
 
             site.set_products(len(prices), product_avg/len(prices), statistics.median(prices))
-        except TimeoutException:
-            print("Timed out waiting for page to load")
+        except Exception as e:
+            print(f"Error analysis_store , site {site.link}", e)
 
     def close_driver(self):
         driver.close()
