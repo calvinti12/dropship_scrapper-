@@ -25,12 +25,17 @@ def get_page(url, page, user_agent, collection_handle=None):
             'User-Agent': user_agent
         }
     )
+    number_retries = 3
     while True:
+        if number_retries == 0:
+            print(f'Stop after {number_retries} retries')
+            break
         try:
             data = urllib.request.urlopen(req).read()
             break
         except HTTPError:
             print('Blocked! Sleeping...')
+            number_retries -= 1
             time.sleep(180)
             print('Retrying')
 
