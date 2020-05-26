@@ -9,7 +9,10 @@ global row_data_list
 global row_data_worksheet
 scopes = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 
-UPDATED_COL = 14
+UPDATED_COL = 15
+SITE_CONVERSION = 0.02
+UPDATE_DATA_EVERY_DAYS = 7
+
 
 def find_site_cell_row(link):
     try:
@@ -64,7 +67,7 @@ class GoogleSheets:
 
     def should_update_site(self, link):
         last_updated = find_last_updated_site_date(link)
-        return last_updated + datetime.timedelta(weeks=1) <= parse(str(datetime.date.today()))
+        return last_updated + datetime.timedelta(days=UPDATE_DATA_EVERY_DAYS) <= parse(str(datetime.date.today()))
 
     def add_site_to_row_data(self, site):
         row = find_site_cell_row(site.link)
@@ -74,14 +77,36 @@ class GoogleSheets:
                      '{:,}'.format(int(site.last90days_rank)),
                      '{:,}'.format(int(site.today_rank)),
                      '{:,}'.format(int(site.daily_visitors)),
-                     site.monthly_visitors,
-                     '${:,.2f}'.format(float(site.avg_product_price)),
-                     '${:,.2f}'.format(float(site.median_product_price)),
-                     '${:,.2f}'.format((int(site.daily_visitors)*0.015)*float(site.median_product_price)),
+                     '{:,}'.format(int(site.monthly_visitors)),
+                     '${:,.1f}'.format(float(site.avg_product_price)),
+                     '${:,.1f}'.format(float(site.median_product_price)),
+                     '${:,.0f}'.format((int(site.daily_visitors)*SITE_CONVERSION)*float(site.median_product_price)),
                      site.number_of_products,
                      site.strong_collection,
+                     site.strong_type,
                      parse(site.last_updated).strftime("%d/%m/%Y"),
                      parse(site.first_publish).strftime("%d/%m/%Y"),
                      datetime.date.today().strftime("%d/%m/%Y")]
         row_data_list.append(site_list)
-        row_data_worksheet.update(f'A{row}:O{row}', [site_list])
+        row_data_worksheet.update(f'A{row}:P{row}', [site_list])
+
+    def add_error_site_to_row_data(self, site):
+        row = find_site_cell_row(site.link)
+        site_list = [str(int(row) - 1),
+                     site.ranking,
+                     site.link,
+                     '{:,}'.format(int(site.last90days_rank)),
+                     '{:,}'.format(int(site.today_rank)),
+                     '{:,}'.format(int(site.daily_visitors)),
+                     '{:,}'.format(int(site.monthly_visitors)),
+                     '${:,.1f}'.format(float(site.avg_product_price)),
+                     '${:,.1f}'.format(float(site.median_product_price)),
+                     '${:,.0f}'.format((int(site.daily_visitors)*SITE_CONVERSION)*float(site.median_product_price)),
+                     site.number_of_products,
+                     site.strong_collection,
+                     site.strong_type,
+                     site.last_updated,
+                     site.first_publish,
+                     datetime.date.today().strftime("%d/%m/%Y")]
+        row_data_list.append(site_list)
+        row_data_worksheet.update(f'A{row}:P{row}', [site_list])

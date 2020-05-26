@@ -4,14 +4,16 @@ import time
 from collections import Counter
 import statistics
 from dateutil.parser import parse
+from fake_useragent import UserAgent
 import urllib.request
 from urllib.error import HTTPError
 
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
 MAX_ITEM_TO_STORE = 100
 
+proxy_host = 'localhost:1234'
 
-def get_page(url, page, collection_handle=None):
+
+def get_page(url, page, user_agent, collection_handle=None):
     full_url = url
     if collection_handle:
         full_url += '/collections/{}'.format(collection_handle)
@@ -20,7 +22,7 @@ def get_page(url, page, collection_handle=None):
         full_url + '?page={}'.format(page),
         data=None,
         headers={
-            'User-Agent': USER_AGENT
+            'User-Agent': user_agent
         }
     )
     while True:
@@ -36,7 +38,7 @@ def get_page(url, page, collection_handle=None):
     return products
 
 
-def get_page_collections(url):
+def get_page_collections(url, user_agent):
     full_url = url + '/collections.json'
     page = 1
     while True:
@@ -44,7 +46,7 @@ def get_page_collections(url):
             full_url + '?page={}'.format(page),
             data=None,
             headers={
-                'User-Agent': USER_AGENT
+                'User-Agent': user_agent
             }
         )
         while True:
@@ -64,14 +66,6 @@ def get_page_collections(url):
         page += 1
 
 
-def check_shopify(url):
-    try:
-        get_page(url, 1)
-        return True
-    except Exception:
-        return False
-
-
 def fix_url(url):
     fixed_url = url.strip()
     if not fixed_url.startswith('http://') and \
@@ -81,9 +75,9 @@ def fix_url(url):
     return fixed_url.rstrip('/')
 
 
-def extract_products_collection(url, col):
+def extract_products_collection(url, user_agent, col):
     page = 1
-    products = get_page(url, page, col)
+    products = get_page(url, page, user_agent, col)
     while products:
         for product in products:
             try:
@@ -112,10 +106,10 @@ def extract_products_collection(url, col):
                 print(f"Error in extract_products_collection", e)
                 yield
         page += 1
-        products = get_page(url, page, col)
+        products = get_page(url, page, user_agent, col)
 
 
-def extract_products(url):
+def extract_products(url, user_agent):
     seen_products_id = set()
     products = {
         'product_avg': 0,
@@ -123,17 +117,20 @@ def extract_products(url):
         'first_publish': '01/01/2090',
         'last_updated': '01/01/1971',
         'collection': [],
-        'strong_collection': ''
+        'type': [],
+        'strong_collection': '',
+        'strong_type': ''
     }
 
-    for col in get_page_collections(url):
-        for product in extract_products_collection(url, col['handle']):
+    for col in get_page_collections(url, user_agent):
+        for product in extract_products_collection(url, user_agent, col['handle']):
             try:
                 if product and (product['product_id'] in seen_products_id or not bool(product['stock'])):
                     continue
                 products['product_avg'] += float(product['price'])
                 products['prices'].append(float(product['price']))
                 products['collection'].append(col['handle'])
+                products['type'].append(product['product_type'])
                 if parse(products['first_publish']).date() > parse(product['published_at']).date():
                     products['first_publish'] = str(parse(product['published_at']).date())
                 if parse(products['last_updated']).date() < parse(product['updated_at']).date():
@@ -147,12 +144,13 @@ def extract_products(url):
 
 
 def analysis_site(site):
-    products = extract_products(fix_url(site.link))
+    products = extract_products(fix_url(site.link), UserAgent().random)
     best_col = Counter(products['collection'])
+    best_type = Counter(products['type'])
     products['strong_collection'] = list(best_col.keys())[0] + f"({best_col[list(best_col.keys())[0]]})"
-    site.set_products(len(products['prices']), products['product_avg'] / len(products['prices']), statistics.median(products['prices']), products['strong_collection'], products['last_updated'], products['first_publish'])
+    products['strong_type'] = list(best_type.keys())[0] + f"({best_type[list(best_type.keys())[0]]})"
+    site.set_products(len(products['prices']), products['product_avg'] / len(products['prices']), statistics.median(products['prices']), products['strong_collection'], products['strong_type'], products['last_updated'], products['first_publish'])
 
 
 class ShopifyScrapper:
     pass
-

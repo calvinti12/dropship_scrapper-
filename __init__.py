@@ -26,6 +26,8 @@ for row in range(0, number_of_sites):
             print(f"#{site.link} Was updated recently ")
     except Exception as e:
         print(f"Error get_site", e)
+        sites_sheet.add_error_site_to_row_data(sites_sheet.get_site(row+1))
+
 
 # niche_scrapper.close_driver()
 
