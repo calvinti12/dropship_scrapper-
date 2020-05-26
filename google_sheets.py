@@ -9,6 +9,7 @@ global row_data_list
 global row_data_worksheet
 scopes = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 
+UPDATED_COL = 14
 
 def find_site_cell_row(link):
     try:
@@ -24,7 +25,7 @@ def find_last_updated_site_date(link):
     try:
         for sublist in row_data_list:
             if sublist[2] == link:
-                return parse(sublist[11])
+                return parse(sublist[UPDATED_COL])
 
     except Exception as e:
         print("Cant find product updated", e)
@@ -70,14 +71,17 @@ class GoogleSheets:
         site_list = [str(int(row) - 1),
                      site.ranking,
                      site.link,
-                     site.last90days_rank,
-                     site.today_rank,
-                     site.daily_visitors,
+                     '{:,}'.format(int(site.last90days_rank)),
+                     '{:,}'.format(int(site.today_rank)),
+                     '{:,}'.format(int(site.daily_visitors)),
                      site.monthly_visitors,
-                     site.avg_product_price,
-                     site.median_product_price,
-                     'monthly_visitors*median_product_price*0.01',
+                     '${:,.2f}'.format(float(site.avg_product_price)),
+                     '${:,.2f}'.format(float(site.median_product_price)),
+                     '${:,.2f}'.format((int(site.daily_visitors)*0.015)*float(site.median_product_price)),
                      site.number_of_products,
+                     site.strong_collection,
+                     parse(site.last_updated).strftime("%d/%m/%Y"),
+                     parse(site.first_publish).strftime("%d/%m/%Y"),
                      datetime.date.today().strftime("%d/%m/%Y")]
         row_data_list.append(site_list)
-        row_data_worksheet.update(f'A{row}:L{row}', [site_list])
+        row_data_worksheet.update(f'A{row}:O{row}', [site_list])
