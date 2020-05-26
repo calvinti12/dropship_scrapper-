@@ -3,6 +3,7 @@ from google_sheets import GoogleSheets
 from Scrappers.awis_api_wrapper import get_rank
 from Scrappers.niche_scrapper import NicheScrapper
 from Scrappers.shopify_scraper import analysis_site
+import time
 
 # gts = GoogleTrends(["Acupressure Relief Mat"])
 
@@ -15,8 +16,11 @@ number_of_sites = sites_sheet.get_last_row()-1
 print(f"number_of_sites {number_of_sites}")
 
 for row in range(0, number_of_sites):
+    start = time.time()
+    site_link = ""
     try:
         site = sites_sheet.get_site(row+1)
+        site_link = site.link
         if sites_sheet.should_update_site(site.link):
             print(f"#{row+1} Working on - " + site.link)
             site.add_stats(get_rank(site))
@@ -27,6 +31,9 @@ for row in range(0, number_of_sites):
     except Exception as e:
         print(f"Error get_site", e)
         sites_sheet.add_error_site_to_row_data(sites_sheet.get_site(row+1))
+    timer_site = '{:,.1f}'.format(float(time.time() - start))
+    print(f'Time for {site_link} :{timer_site}s')
+
 
 
 # niche_scrapper.close_driver()
