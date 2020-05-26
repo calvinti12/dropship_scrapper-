@@ -11,7 +11,7 @@ import time
 import random
 global driver
 global actions
-global my_ips_sites_worksheet
+global my_ips_sites_list
 
 
 def send_keys_decimal(text, element):

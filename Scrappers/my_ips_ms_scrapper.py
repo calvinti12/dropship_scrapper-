@@ -5,7 +5,7 @@ from fake_useragent import UserAgent
 import time
 global driver
 global actions
-global my_ips_sites_worksheet
+global my_ips_sites_list
 # Print data for testing
 
 
@@ -70,7 +70,7 @@ class MyIpsMsScrapper:
     LINK = "https://myip.ms/browse/sites/1/host/myshopify.com/host_A/1"
 
     def __init__(self, _sheet):
-        global my_ips_sites_worksheet
+        global my_ips_sites_list
         global driver
         global actions
         sheet = _sheet

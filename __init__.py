@@ -15,7 +15,7 @@ print(f"number_of_sites {number_of_sites}")
 
 for row in range(0, number_of_sites):
     try:
-        site = sites_sheet.get_site(row+2)
+        site = sites_sheet.get_site(row+1)
         if sites_sheet.should_update_site(site.link):
             print(f"#{row} Working on - " + site.link)
             site.add_stats(get_rank(site))

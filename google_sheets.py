@@ -4,71 +4,62 @@ import datetime
 from dateutil.parser import parse
 from Class.site import Site
 from google.oauth2.service_account import Credentials
-global my_ips_sites_worksheet
+global my_ips_sites_list
+global row_data_list
 global row_data_worksheet
 scopes = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 
 
-def find_product_cell_row(product):
-    try:
-        cell = my_ips_sites_worksheet.find(product)
-        return cell.row
-    except Exception as e:
-        print("Cant find product", e)
-        return next_available_row(my_ips_sites_worksheet)
-
-
 def find_site_cell_row(link):
     try:
-        cell = my_ips_sites_worksheet.find(link)
-        return cell.row
+        for sublist in row_data_list:
+            if sublist[2] == link:
+                return parse(sublist[0])
     except Exception as e:
         print("Cant find product", e)
-        return next_available_row(row_data_worksheet)
+    return next_available_row()
 
 
 def find_last_updated_site_date(link):
     try:
-        cell = row_data_worksheet.find(link)
-        return parse(row_data_worksheet.acell(f"L{str(cell.row)}").value)
+        for sublist in row_data_list:
+            if sublist[2] == link:
+                return parse(sublist[11])
+
     except Exception as e:
         print("Cant find product updated", e)
-        return parse(str(datetime.date.today()))
+        return parse(str(datetime.date.today() + datetime.timedelta(weeks=-2)))
+    return parse(str(datetime.date.today() + datetime.timedelta(weeks=-2)))
 
 
-def next_available_row(work_sheet):
-    str_list = list(filter(None, work_sheet.col_values(1)))
-    return str(len(str_list) + 1)
+def next_available_row():
+    return str(len(row_data_list) + 1)
 
 
-def get_cell_value(col, row):
-    return my_ips_sites_worksheet.acell(f"{str(col)}{str(row)}").value
-
-
-def add_data_to_row(row, data, link):
-    try:
-        row_data_worksheet.update(row, data)
-    except Exception as e:
-        print(f"Cant add data to row {row} to site {link}", e)
+def get_value(col, row):
+    return my_ips_sites_list[row][col]
 
 
 class GoogleSheets:
     def __init__(self, sheet_name):
-        global my_ips_sites_worksheet
+        global my_ips_sites_list
+        global row_data_list
         global row_data_worksheet
+
         credentials = Credentials.from_service_account_file('sheets_key.json', scopes=scopes)
         gc = gspread.authorize(credentials)
-        my_ips_sites_worksheet = gc.open(sheet_name).worksheet("Myip_sites")
+        my_ips_sites_list = gc.open(sheet_name).worksheet("Myip_sites").get_all_values()
         row_data_worksheet = gc.open(sheet_name).worksheet("Raw_data")
+        row_data_list = row_data_worksheet.get_all_values()
 
     def get_last_row(self):
-        return int(next_available_row(my_ips_sites_worksheet)) - 1
+        return int(len(my_ips_sites_list))
 
     def get_site(self, row_number):
-        return Site(ranking=get_cell_value("B", row_number),
-                    link=get_cell_value("C", row_number),
-                    daily_visitors=get_cell_value("D", row_number),
-                    monthly_visitors=get_cell_value("E", row_number))
+        return Site(ranking=get_value(1, row_number),
+                    link=get_value(2, row_number),
+                    daily_visitors=get_value(3, row_number),
+                    monthly_visitors=get_value(4, row_number))
 
     def should_update_site(self, link):
         last_updated = find_last_updated_site_date(link)
@@ -76,16 +67,17 @@ class GoogleSheets:
 
     def add_site_to_row_data(self, site):
         row = find_site_cell_row(site.link)
-        add_data_to_row(f"B{row}", site.ranking, site.link)
-        add_data_to_row(f"C{row}", site.link, site.link)
-        add_data_to_row(f"D{row}", site.last90days_rank, site.link)
-        add_data_to_row(f"E{row}", site.today_rank, site.link)
-        add_data_to_row(f"F{row}", site.daily_visitors, site.link)
-        add_data_to_row(f"G{row}", site.monthly_visitors, site.link)
-        add_data_to_row(f"H{row}", site.avg_product_price, site.link)
-        add_data_to_row(f"I{row}", site.median_product_price, site.link)
-        add_data_to_row(f"K{row}", site.number_of_products, site.link)
-        add_data_to_row(f"L{row}", datetime.date.today().strftime("%d/%m/%Y"), site.link)
-
-
-
+        site_list = [str(int(row) - 1),
+                     site.ranking,
+                     site.link,
+                     site.last90days_rank,
+                     site.today_rank,
+                     site.daily_visitors,
+                     site.monthly_visitors,
+                     site.avg_product_price,
+                     site.median_product_price,
+                     'monthly_visitors*median_product_price*0.01',
+                     site.number_of_products,
+                     datetime.date.today().strftime("%d/%m/%Y")]
+        row_data_list.append(site_list)
+        row_data_worksheet.update(f'A{row}:L{row}', [site_list])
