@@ -56,7 +56,7 @@ class GoogleSheets:
         row_data_worksheet = gc.open(sheet_name).worksheet("Raw_data")
         row_data_list = row_data_worksheet.get_all_values()
 
-    def get_last_row(self):
+    def get_last_ips_site(self):
         return int(len(my_ips_sites_list))
 
     def get_site(self, row_number):

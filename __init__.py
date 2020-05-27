@@ -1,21 +1,16 @@
 from google_sheets import GoogleSheets
-# from Scrappers.my_ips_ms_scrapper import MyIpsMsScrapper
 from Scrappers.awis_api_wrapper import get_rank
-from Scrappers.niche_scrapper import NicheScrapper
 from Scrappers.shopify_scraper import analysis_site
 import time
 
 # gts = GoogleTrends(["Acupressure Relief Mat"])
 
-
 sites_sheet = GoogleSheets('Sites & products')
-# niche_scrapper = NicheScrapper("goffer14@gmail.com", "-7iMqAg6hp_wy*U")
-
-number_of_sites = sites_sheet.get_last_row()-1
+number_of_sites = sites_sheet.get_last_ips_site() - 1
 
 print(f"number_of_sites {number_of_sites}")
 
-for row in range(0, number_of_sites):
+for row in range(1, number_of_sites):
     start = time.time()
     site_link = ""
     try:
@@ -29,15 +24,8 @@ for row in range(0, number_of_sites):
         else:
             print(f"#{site.link} Was updated recently ")
     except Exception as e:
-        print(f"Error get_site", e)
+        print(f"Error get_site row {row}", e)
         sites_sheet.add_error_site_to_row_data(sites_sheet.get_site(row+1))
     timer_site = '{:,.1f}'.format(float(time.time() - start))
     print(f'Time for {site_link} :{timer_site}s')
 
-
-
-# niche_scrapper.close_driver()
-
-
-# results = gts.get_interest_over_time()
-# print(results)
