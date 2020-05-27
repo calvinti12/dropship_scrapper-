@@ -1,3 +1,6 @@
+import statistics
+
+
 class Site:
     def __init__(self, ranking, link, daily_visitors, monthly_visitors):
         self.ranking = ranking
@@ -36,3 +39,7 @@ class Site:
         self.last_updated = last_updated
         self.first_publish = first_publish
 
+    def set_products_lean(self, products):
+        self.set_products(len(products['prices']), products['product_avg'] / len(products['prices']),
+                          statistics.median(products['prices']), products['strong_collection'],
+                          products['strong_type'], products['last_updated'], products['first_publish'])

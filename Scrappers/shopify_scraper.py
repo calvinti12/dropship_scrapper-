@@ -1,5 +1,5 @@
-
 import json
+import socket
 import time
 from collections import Counter
 import statistics
@@ -7,10 +7,9 @@ from dateutil.parser import parse
 from fake_useragent import UserAgent
 import urllib.request
 from urllib.error import HTTPError
+from flask import jsonify
 
 MAX_ITEM_TO_STORE = 100
-
-proxy_host = 'localhost:1234'
 
 
 def get_page(url, page, user_agent, collection_handle=None):
@@ -153,14 +152,30 @@ def extract_products(url, user_agent):
     return products
 
 
-def analysis_site(site):
-    products = extract_products(fix_url(site.link), UserAgent().random)
-    best_col = Counter(products['collection'])
-    best_type = Counter(products['type'])
-    products['strong_collection'] = list(best_col.keys())[0] + f"({best_col[list(best_col.keys())[0]]})"
-    products['strong_type'] = list(best_type.keys())[0] + f"({best_type[list(best_type.keys())[0]]})"
-    site.set_products(len(products['prices']), products['product_avg'] / len(products['prices']), statistics.median(products['prices']), products['strong_collection'], products['strong_type'], products['last_updated'], products['first_publish'])
+def analysis_site(request):
+    link = request.form.get('link')
+    request_json = request.get_json(silent=True)
+    request_args = request.args
+
+    if request_json and 'link' in request_json:
+        link = request_json['link']
+    elif request_args and 'link' in request_args:
+        link = request_args['link']
+    else:
+        return "Not valid link"
+
+    print([l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1],
+                       [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in
+                         [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])
+    try:
+        products = extract_products(fix_url(link), UserAgent().random)
+        best_col = Counter(products['collection'])
+        best_type = Counter(products['type'])
+        products['strong_collection'] = list(best_col.keys())[0] + f"({best_col[list(best_col.keys())[0]]})"
+        products['strong_type'] = list(best_type.keys())[0] + f"({best_type[list(best_type.keys())[0]]})"
+    except Exception as e:
+        return f"Error in analysis_site {e}"
+
+    return jsonify(products)
 
 
-class ShopifyScrapper:
-    pass
