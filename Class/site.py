@@ -2,7 +2,8 @@ import statistics
 
 
 class Site:
-    def __init__(self, ranking, link, daily_visitors, monthly_visitors):
+    def __init__(self, row_number, ranking, link, daily_visitors, monthly_visitors):
+        self.row_number = row_number
         self.ranking = ranking
         self.link = link
         self.daily_visitors = int(daily_visitors.replace(',', ''))

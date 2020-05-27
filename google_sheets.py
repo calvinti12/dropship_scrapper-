@@ -1,4 +1,5 @@
 # https://gspread.readthedocs.io/en/latest/oauth2.html
+import asyncio
 import gspread
 import datetime
 from dateutil.parser import parse
@@ -44,6 +45,11 @@ def get_value(col, row):
     return my_ips_sites_list[row][col]
 
 
+def save_sheet(site_list, row):
+    row_data_list.append(site_list)
+    row_data_worksheet.update(f'A{row+1}:P{row+1}', [site_list])
+
+
 class GoogleSheets:
     def __init__(self, sheet_name):
         global my_ips_sites_list
@@ -53,14 +59,14 @@ class GoogleSheets:
         credentials = Credentials.from_service_account_file('sheets_key.json', scopes=scopes)
         gc = gspread.authorize(credentials)
         my_ips_sites_list = gc.open(sheet_name).worksheet("Myip_sites").get_all_values()
-        row_data_worksheet = gc.open(sheet_name).worksheet("Raw_data")
+        row_data_worksheet = gc.open(sheet_name).worksheet("Store_analysis")
         row_data_list = row_data_worksheet.get_all_values()
 
     def get_last_ips_site(self):
         return int(len(my_ips_sites_list))
 
     def get_site(self, row_number):
-        return Site(ranking=get_value(1, row_number),
+        return Site(row_number=row_number, ranking=get_value(1, row_number),
                     link=get_value(2, row_number),
                     daily_visitors=get_value(3, row_number),
                     monthly_visitors=get_value(4, row_number))
@@ -70,8 +76,7 @@ class GoogleSheets:
         return last_updated + datetime.timedelta(days=UPDATE_DATA_EVERY_DAYS) <= parse(str(datetime.date.today()))
 
     def add_site_to_row_data(self, site):
-        row = find_site_cell_row(site.link)
-        site_list = [str(int(row) - 1),
+        site_list = [str(int(site.row_number)),
                      site.ranking,
                      site.link,
                      '{:,}'.format(int(site.last90days_rank)),
@@ -87,12 +92,10 @@ class GoogleSheets:
                      parse(site.last_updated).strftime("%d/%m/%Y"),
                      parse(site.first_publish).strftime("%d/%m/%Y"),
                      datetime.date.today().strftime("%d/%m/%Y")]
-        row_data_list.append(site_list)
-        row_data_worksheet.update(f'A{row}:P{row}', [site_list])
+        save_sheet(site_list, site.row_number)
 
     def add_error_site_to_row_data(self, site):
-        row = find_site_cell_row(site.link)
-        site_list = [str(int(row) - 1),
+        site_list = [str(int(site.row_number)),
                      site.ranking,
                      site.link,
                      '{:,}'.format(int(site.last90days_rank)),
@@ -108,5 +111,4 @@ class GoogleSheets:
                      site.last_updated,
                      site.first_publish,
                      datetime.date.today().strftime("%d/%m/%Y")]
-        row_data_list.append(site_list)
-        row_data_worksheet.update(f'A{row}:P{row}', [site_list])
+        save_sheet(site_list, site.row_number)
