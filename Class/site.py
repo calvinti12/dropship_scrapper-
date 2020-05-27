@@ -25,7 +25,7 @@ class Site:
                 self.last90days_rank = stats[0]["rank"]
                 self.today_rank = stats[2]["rank"]
         except Exception as e:
-            print(f"Cant add_stats to site - {self.link}", e)
+            print(f"Cant add_stats to site - {self.link} stats - {stats}", e)
 
     def set_products(self, number_of_products, avg_product_price, median_product_price, strong_collection, strong_type, last_updated, first_publish):
         self.number_of_products = number_of_products
