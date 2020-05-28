@@ -6,7 +6,8 @@ LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/store_scrapper_"
 DEBUG = False
 
 
-def get_store_products(link, scrape_number):
+def get_store_products(link):
+    scrape_number = 1
     try:
         if DEBUG:
             products = json.loads(analysis_site_test(link))
