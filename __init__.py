@@ -9,8 +9,7 @@ sites_sheet = GoogleSheets('Sites & products')
 atlas = MongoAtlas()
 sites_to_update = atlas.get_sites_to_update(sites_sheet.get_sites())
 
-NUMBER_OF_INSTANCE = 200
-NUMBER_OF_WORKERS = 50
+NUMBER_OF_WORKERS = 100
 
 
 def scrape_sites(sites):
@@ -21,26 +20,24 @@ def scrape_sites(sites):
 
 def add_sites(site):
     try:
-        print(f"Working on - {site.link}")
         site.add_stats(get_rank(site))
         products = get_store_products(site.link)
         if products:
             site.set_products_lean(products)
             atlas.update_site(site)
+            print(f"Finish {site.link}")
         else:
             atlas.update_site(site)
+            print(f"Finish {site.link} with no products")
+
     except Exception as e:
-        print("Error in add_sites", e)
+        print(f"Error to  {site.link} with {e}")
 
 
 def main():
     while len(sites_to_update) > 0:
-        worker_sites = []
-        for x in range(NUMBER_OF_INSTANCE):
-            if len(sites_to_update) > 0:
-                worker_sites.append(sites_to_update.pop(0))
-        if len(worker_sites) > 0:
-            scrape_sites(worker_sites)
+        scrape_sites(sites_to_update)
+    print(f"Finish all sites")
 
 
 if __name__ == "__main__":
