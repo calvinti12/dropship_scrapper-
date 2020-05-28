@@ -98,7 +98,14 @@ def extract_products_collection(url, user_agent, col):
                     updated_at = product['updated_at']
                     stock = str(product['variants'][0]['available'])
                     price = product['variants'][0]['price']
+                    sku = product['variants'][0]['sku']
+                    main_image_src = ''
+                    if product['images']:
+                        main_image_src = product['images'][0]['src']
+
                     row = {'product_id': str(product_id),
+                           'sku': str(sku),
+                           'main_image_src': str(main_image_src),
                            'product_type': product_type,
                            'title': title,
                            'price': price,
@@ -123,6 +130,7 @@ def extract_products(url, user_agent):
     products = {
         'product_avg': 0,
         'prices': [],
+        'products': [],
         'first_publish': '01/01/2090',
         'last_updated': '01/01/1971',
         'collection': [],
@@ -136,6 +144,7 @@ def extract_products(url, user_agent):
             try:
                 if product and (product['product_id'] in seen_products_id or not bool(product['stock'])):
                     continue
+                products['products'].append(product)
                 products['product_avg'] += float(product['price'])
                 products['prices'].append(float(product['price']))
                 products['collection'].append(col['handle'])
@@ -153,7 +162,7 @@ def extract_products(url, user_agent):
 
 
 def analysis_site(request):
-    link = request.form.get('link')
+
     request_json = request.get_json(silent=True)
     request_args = request.args
 
@@ -164,9 +173,19 @@ def analysis_site(request):
     else:
         return "Not valid link"
 
-    print([l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1],
-                       [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in
-                         [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])
+    try:
+        products = extract_products(fix_url(link), UserAgent().random)
+        best_col = Counter(products['collection'])
+        best_type = Counter(products['type'])
+        products['strong_collection'] = list(best_col.keys())[0] + f"({best_col[list(best_col.keys())[0]]})"
+        products['strong_type'] = list(best_type.keys())[0] + f"({best_type[list(best_type.keys())[0]]})"
+    except Exception as e:
+        return f"Error in analysis_site {e}"
+
+    return jsonify(products)
+
+
+def analysis_site_test(link):
     try:
         products = extract_products(fix_url(link), UserAgent().random)
         best_col = Counter(products['collection'])

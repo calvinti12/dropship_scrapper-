@@ -1,5 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
+import datetime
+from dateutil.parser import parse
 global soup
 
 
@@ -27,7 +29,7 @@ def get_rank(site):
 def extract_stats(stats):
     try:
         stat = {
-            "time_frame": '',
+            "stats_date": '',
             "rank": stats.Rank.Value.get_text(),
             "rank_delta": stats.Rank.Delta.get_text(),
             "reach": stats.Reach.Rank.Value.get_text(),
@@ -42,9 +44,9 @@ def extract_stats(stats):
             "page_views_per_user_delta": stats.PageViews.PerUser.Delta.get_text()
         }
         if stats.find('Months'):
-            stat["time_frame"] = stats.TimeRange.Months.get_text()
+            stat["stats_date"] = parse(str(datetime.date.today() - datetime.timedelta(days=int(stats.TimeRange.Months.get_text())*30)))
         else:
-            stat["time_frame"] = stats.TimeRange.Days.get_text()
+            stat["stats_date"] = parse(str(datetime.date.today() - datetime.timedelta(days=int(stats.TimeRange.Days.get_text()))))
         return stat
     except Exception as e:
         print("Cant extract_stats item", e)
