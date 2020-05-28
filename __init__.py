@@ -9,12 +9,12 @@ sites_sheet = GoogleSheets('Sites & products')
 atlas = MongoAtlas()
 sites_to_update = atlas.get_sites_to_update(sites_sheet.get_sites())
 
+NUMBER_OF_INSTANCE = 200
+NUMBER_OF_WORKERS = 50
+
 
 def scrape_sites(sites):
-    workers = int(len(sites) / 2)
-    if workers == 0:
-        workers = 1
-    with ThreadPoolExecutor(max_workers=25) as executor:
+    with ThreadPoolExecutor(max_workers=NUMBER_OF_WORKERS) as executor:
         for site in sites:
             executor.submit(add_sites, site)
 
@@ -34,10 +34,9 @@ def add_sites(site):
 
 
 def main():
-    number_per_instance = 200
     while len(sites_to_update) > 0:
         worker_sites = []
-        for x in range(number_per_instance):
+        for x in range(NUMBER_OF_INSTANCE):
             if len(sites_to_update) > 0:
                 worker_sites.append(sites_to_update.pop(0))
         if len(worker_sites) > 0:
