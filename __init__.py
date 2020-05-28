@@ -14,14 +14,14 @@ def scrape_sites(sites, scrape_number):
     workers = int(len(sites) / 2)
     if workers == 0:
         workers = 1
-    with ThreadPoolExecutor(max_workers=workers) as executor:
+    with ThreadPoolExecutor(max_workers=25) as executor:
         for site in sites:
             executor.submit(add_sites, site, scrape_number)
 
 
 def add_sites(site, scrape_number):
     try:
-        print(f"Working on - {site.link} using google scraper number {scrape_number}")
+        print(f"Working on - {site.link}")
         site.add_stats(get_rank(site))
         products = get_store_products(site.link, scrape_number)
         if products:
@@ -34,7 +34,7 @@ def add_sites(site, scrape_number):
 
 
 def main():
-    number_per_instance = 50
+    number_per_instance = 200
     scrape_number = 1
     while len(sites_to_update) > 0:
         worker_sites = []

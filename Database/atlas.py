@@ -17,7 +17,7 @@ def toDate(date_string):
 
 
 def get_link(site):
-    return site['link']
+    return str(site['link'])
 
 
 def add_site_analysis(site):
@@ -81,9 +81,7 @@ class MongoAtlas:
         try:
             updated_sites = set(map(get_link, list(sites.find({"updated": {'$gte': update_date}}, {'_id': 0, 'link': 1}))))
             print(f"Total updated sites {len(updated_sites)}")
-            for site in sites_list:
-                if site.link in updated_sites:
-                    sites_list.remove(site)
+            sites_list[:] = [site for site in sites_list if not str(site.link) in updated_sites]
             print(f"Total sites to process {len(sites_list)}")
             return sites_list
         except Exception as e:
