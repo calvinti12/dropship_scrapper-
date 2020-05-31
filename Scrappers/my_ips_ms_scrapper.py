@@ -1,108 +1,73 @@
-# http://allselenium.info/python-selenium-all-mouse-actions-using-actionchains/
-from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains
-from fake_useragent import UserAgent
+import requests
 import time
-global driver
-global actions
-global my_ips_sites_list
-# Print data for testing
+from flask import jsonify
+from lxml import html
+from fake_useragent import UserAgent
 
 
-# EQESBMB9VC9CQRUJCDFIKGM
-
-def extract_all_sites(number_of_pages):
-    # actions.move_to_element(driver.find_element_by_xpath("// *[ @ id = 'sites_tbl'] / thead[1] / tr[1] / th[7]")).perform()
-
-    for page_number in range(1, number_of_pages):
-        print("#" + str(page_number))
-        # item = extract_item()
-        # if item:
-        #     sheet.add_product_to_sheet(item)
-        next_page = get_next_page_location(page_number+1)
-        if next_page:
-            actions.move_to_element(next_page).perform()
-            time.sleep(2)
-            actions.click(next_page).perform()
-            time.sleep(3)
-            check_if_robot()
-        else:
-            print("End of pages")
+payload = {'getpage': 'yes',
+           'lang': 'en'}
 
 
-def check_if_robot():
-    captcha_submit = get_im_not_robot_button()
-    if captcha_submit:
-        actions.move_to_element(captcha_submit).perform()
-        time.sleep(2)
-        actions.click(captcha_submit)
-        time.sleep(3)
+headers = {
+    'Accept': 'text/html, */*; q=0.01',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8,fr;q=0.7',
+    'Connection': 'keep-alive',
+    'Content-Length': '19',
+    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    'Cookie': 's2_csrf_cookie_name=3c111c8c0e52355f4fad0f2723d1ed3d; PHPSESSID=k215kcd51cbpruhkkp66krqie6; sw=134.9; sh=66.3; _ga=GA1.2.797439241.1588021291; _gid=GA1.2.215352006.1588021291; __gads=ID=6030cdad3da56a15:T=1588021296:S=ALNI_MYHF2Zdj8vwDzyDcBxeBrzT6uLFMQ; s2_csrf_cookie_name=3c111c8c0e52355f4fad0f2723d1ed3d; _gat=1; s2_uGoo=36a7f2682b286c7f0722046b21c811cc5d795460; __unam=737437c-171bd71e950-2dd2390f-26',
+    'Host': 'myip.ms',
+    'Origin': 'https://myip.ms',
+    'Referer': 'https://myip.ms/browse/sites/1/own/376714/sort/6/asc/1#sites_tbl_top',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-origin',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36',
+    'X-Requested-With': 'XMLHttpRequest'
+}
+
+
+def scraper(page):
+    websites = []
+    rankings = []
+
+    time.sleep(5)
+    url = f"https://myip.ms/ajax_table/sites/{page}/own/376714/sort/6"
+
+    headers['User-Agent'] = UserAgent().random
+
+    response = requests.request("POST", url, headers=headers, data=payload, files=[])
+
+    page_resp = html.fromstring(response.text.encode('utf8'))
+
+    # rankings
+    for r in page_resp.xpath("//span[contains(text(), '#')]"):
+        rankings.append(r.xpath('.//text()')[0].replace('#', '').replace(',', '').strip())
+
+    # websites
+    for w in page_resp.xpath("//*[@ri]"):
+        websites.append(w.xpath(".//text()")[0])
+
+    print(rankings, websites)
+
+    return jsonify({'websites': len(websites), 'rankings': len(rankings)})
+
+
+def analysis_page(request):
+
+    request_json = request.get_json(silent=True)
+    request_args = request.args
+
+    if request_json and 'page' in request_json:
+        page = request_json['page']
+    elif request_args and 'page' in request_args:
+        page = request_args['page']
     else:
-        print("No check_if_robot found")
+        return "Not valid page"
+
+    return scraper(page)
 
 
-def extract_item():
-    try:
-        item = {
-            'title': driver.find_element_by_class_name('product_title').text,
-        }
-        return item
-    except Exception as e:
-        print("Cant extract_item item", e)
-
-
-def get_next_page_location(page_number):
-    try:
-        return driver.find_element_by_xpath(f"//*[@id='tabs-1']/table[2]/tbody[1]/tr[1]/td[1]/span[1]/span[1]/table[1]/tbody[1]/tr[1]/td[1]/div[1]/div[1]/a[{page_number}]")
-    except Exception as e:
-        print("Cant get_next_page_location", e)
-
-
-def get_im_not_robot_button():
-    try:
-        return driver.find_element_by_id("captcha_submit")
-    except Exception as e:
-        print("Cant get_im_not_robot_button", e)
-
-
-class MyIpsMsScrapper:
-
-    LINK = "https://myip.ms/browse/sites/1/host/myshopify.com/host_A/1"
-
-    def __init__(self, _sheet):
-        global my_ips_sites_list
-        global driver
-        global actions
-        sheet = _sheet
-        # Don't show the Chrome browser
-        useragent = UserAgent().random
-        print(useragent)
-        options = webdriver.ChromeOptions()
-        # options.add_argument("headless")
-        options.add_argument(f'user-agent={useragent}')
-        driver = webdriver.Chrome(executable_path=r"chromedriver.exe", chrome_options=options)
-        driver.get(self.LINK)
-        time.sleep(3)
-
-        actions = ActionChains(driver)
-
-        #
-        #
-        # driver.find_element_by_id("user_login").send_keys(username)
-        # driver.find_element_by_id("user_pass").send_keys(password)
-        #
-        # driver.find_element_by_id("wp-submit").click()
-        #
-        # time.sleep(4)
-        #
-        # driver.find_element_by_xpath(self.All_PRODUCTS).click()
-        #
-        # time.sleep(4)
-        #
-        # driver.find_element_by_xpath(self.FIRST_ITEM).click()
-        #
-        # time.sleep(5)
-
-        extract_all_sites(number_of_pages=3)
-
-        # Get the position based on results
+def analysis_page_test(page):
+    return scraper(page)

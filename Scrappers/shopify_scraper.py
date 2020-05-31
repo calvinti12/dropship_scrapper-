@@ -1,15 +1,13 @@
 import json
-import socket
 import time
 from collections import Counter
-import statistics
 from dateutil.parser import parse
 from fake_useragent import UserAgent
 import urllib.request
 from urllib.error import HTTPError
 from flask import jsonify
 
-MAX_ITEM_TO_STORE = 100
+MAX_ITEM_TO_STORE = 1000
 
 
 def get_page(url, page, user_agent, collection_handle=None):
