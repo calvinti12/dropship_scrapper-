@@ -6,7 +6,7 @@ global sites
 global sites_analysis
 global ads
 
-UPDATE_DATA_EVERY_DAYS = 4
+UPDATE_DATA_EVERY_DAYS = 2
 
 
 def toDate(date_string):
@@ -45,6 +45,16 @@ def add_site_analysis(site):
         }}
     }
     sites_analysis.update_one({'link': site.link}, update_query, upsert=True)
+
+
+def evaluate_site(link, is_dropshipper, niche, main_product, is_branded_products):
+    update_query = {"$set": {
+        "is_dropshipper": is_dropshipper,
+        "niche": niche,
+        "main_product": main_product,
+        "is_branded_products": is_branded_products
+    }}
+    sites.update_one({'link': link}, update_query, upsert=False)
 
 
 class MongoAtlas:

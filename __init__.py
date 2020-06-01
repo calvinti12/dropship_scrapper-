@@ -4,32 +4,35 @@ from Scrappers.awis_api_wrapper import get_rank
 from Google.google_function import get_store_products
 from Google.google_function import get_myips_link
 from concurrent.futures import ThreadPoolExecutor
-from flask import Flask, json
+from flask import Flask, render_template
 
 # gts = GoogleTrends(["Acupressure Relief Mat"])
 sites_sheet = GoogleSheets('Sites & products')
 atlas = MongoAtlas()
 
 
-NUMBER_OF_WORKERS = 10
-api = Flask(__name__)
+NUMBER_OF_WORKERS = 1
+app = Flask(__name__)
+
+niche_list = ["Test1", "Test2", "Test3", "Test4", "Test5", "Test6"]
 
 
-@api.route('/update_all', methods=['GET'])
-def update_all():
-    update_all()
-    return json.dumps("Started update_all")
+def fix_url(url):
+    fixed_url = url.strip()
+    if not fixed_url.startswith('http://') and \
+            not fixed_url.startswith('https://'):
+        fixed_url = 'https://' + fixed_url
+    return fixed_url.rstrip('/')
 
 
-@api.route('/update_zero_products', methods=['GET'])
-def update_zero_products():
-    update_zero_products()
-    return json.dumps("Started update_zero_products")
-
-
-@api.route('/ping', methods=['GET'])
-def ping():
-    return json.dumps("pong")
+@app.route("/")
+def template_test():
+    link = fix_url("ninnsports.com")
+    return render_template('template.html',
+                           link=link,
+                           number_of_products="number_of_products!",
+                           last_product_updated="last_product_updated!",
+                           niche_list=niche_list)
 
 
 def scrape_sites(sites):
@@ -40,7 +43,7 @@ def scrape_sites(sites):
 
 def scrape_my_ips(number_of_pages):
     with ThreadPoolExecutor(max_workers=NUMBER_OF_WORKERS) as executor:
-        for page in range(1, number_of_pages):
+        for page in range(2, number_of_pages):
             executor.submit(get_myips_link, page)
 
 
@@ -68,7 +71,7 @@ def update_all():
 
 
 def get_all_shops():
-    scrape_my_ips(number_of_pages=1000)
+    scrape_my_ips(number_of_pages=3)
 
 
 def update_zero_products():
@@ -78,7 +81,5 @@ def update_zero_products():
     print(f"Finish all sites")
 
 
-if __name__ == "__main__":
-    get_all_shops()
-    # api.run()
-
+if __name__ == '__main__':
+    app.run(debug=True)
