@@ -62,6 +62,7 @@ driver.find_element_by_id('s').send_keys("Selected")
 
 driver.switch_to.default_content()
 
+
 ########Section-3
 
 #switch to a specific iframe (Second frame) using name as locator
