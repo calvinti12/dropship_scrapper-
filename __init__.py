@@ -1,6 +1,7 @@
 from Google.google_sheets import GoogleSheets
 from Database.atlas import MongoAtlas
 from Scrappers.awis_api_wrapper import get_rank
+from Scrappers.site_evaluation import SiteEvaluation
 from Google.google_function import get_store_products
 from Google.google_function import get_myips_link
 from concurrent.futures import ThreadPoolExecutor
@@ -28,11 +29,14 @@ def fix_url(url):
 @app.route("/")
 def template_test():
     link = fix_url("ninnsports.com")
-    return render_template('template.html',
-                           link=link,
-                           number_of_products="number_of_products!",
-                           last_product_updated="last_product_updated!",
-                           niche_list=niche_list)
+    site_evaluation = SiteEvaluation()
+    site_evaluation.get_site(link)
+    #
+    # return render_template('template.html',
+    #                        link=link,
+    #                        number_of_products="number_of_products!",
+    #                        last_product_updated="last_product_updated!",
+    #                        niche_list=niche_list)
 
 
 def scrape_sites(sites):
@@ -82,4 +86,7 @@ def update_zero_products():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    link = fix_url("ninnsports.com")
+    site_evaluation = SiteEvaluation()
+    site_evaluation.get_site(link)
