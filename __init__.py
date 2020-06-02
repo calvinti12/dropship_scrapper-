@@ -1,50 +1,46 @@
 from Google.google_sheets import GoogleSheets
 from Database.atlas import MongoAtlas
+from Frontpages.evaluate import Evaluate
 from Scrappers.awis_api_wrapper import get_rank
 from Google.google_function import get_store_products
-from Google.google_function import get_myips_link
+from Google.google_function import scrape_my_ips
 from concurrent.futures import ThreadPoolExecutor
-from flask import Flask, render_template
+from flask import Flask, request, jsonify
 
 # gts = GoogleTrends(["Acupressure Relief Mat"])
 sites_sheet = GoogleSheets('Sites & products')
 atlas = MongoAtlas()
-
-
-NUMBER_OF_WORKERS = 1
+evaluate = Evaluate()
 app = Flask(__name__)
 
-niche_list = ["Test1", "Test2", "Test3", "Test4", "Test5", "Test6"]
+
+@app.route("/Evaluate")
+def evaluate_site():
+    return evaluate.open_site(atlas.get_site_to_evaluate())
 
 
-def fix_url(url):
-    fixed_url = url.strip()
-    if not fixed_url.startswith('http://') and \
-            not fixed_url.startswith('https://'):
-        fixed_url = 'https://' + fixed_url
-    return fixed_url.rstrip('/')
+@app.route("/next_site", methods=['POST'])
+def next_site():
+    data = request.form.to_dict(flat=False)
+    if data:
+        atlas.evaluate_site(data['data_link'][0],
+                            bool(data['is_dropshipper'][0]),
+                            data['niche'][0],
+                            "Test",
+                            bool(data['is_branded_products'][0]),
+                            int(data['our_ranking'][0]))
+    return evaluate.open_site(atlas.get_site_to_evaluate())
 
 
-@app.route("/")
-def template_test():
-    link = fix_url("ninnsports.com")
-    return render_template('template.html',
-                           link=link,
-                           number_of_products="number_of_products!",
-                           last_product_updated="last_product_updated!",
-                           niche_list=niche_list)
+@app.route("/Start_update")
+def update_all():
+    start_update_all()
 
 
 def scrape_sites(sites):
-    with ThreadPoolExecutor(max_workers=NUMBER_OF_WORKERS) as executor:
+    with ThreadPoolExecutor(max_workers=100) as executor:
         for site in sites:
             executor.submit(add_sites, site)
-
-
-def scrape_my_ips(number_of_pages):
-    with ThreadPoolExecutor(max_workers=NUMBER_OF_WORKERS) as executor:
-        for page in range(2, number_of_pages):
-            executor.submit(get_myips_link, page)
 
 
 def add_sites(site):
@@ -63,7 +59,7 @@ def add_sites(site):
         print(f"Error to  {site.link} with {e}")
 
 
-def update_all():
+def start_update_all():
     sites_to_update = atlas.get_sites_to_update(sites_sheet.get_sites())
     while len(sites_to_update) > 0:
         scrape_sites(sites_to_update)
@@ -72,13 +68,6 @@ def update_all():
 
 def get_all_shops():
     scrape_my_ips(number_of_pages=3)
-
-
-def update_zero_products():
-    sites_to_update = atlas.get_sites_to_update(sites_sheet.get_sites())
-    while len(sites_to_update) > 0:
-        scrape_sites(sites_to_update)
-    print(f"Finish all sites")
 
 
 if __name__ == '__main__':
