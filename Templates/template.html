@@ -19,56 +19,61 @@
     </style>
   </head>
   <body>
-    <form class="form_site" method="POST" action="{{ url_for('next_site') }}">
-<!--      <input type="hidden" id="custId" name="site_link" value="testtt">-->
-      <input name="data_link" value={{data_link}} readonly="readonly">
-      <div class="grid-wrapper">
-        <p>Site: {{link}}</p>
-        <p>Number of products: {{number_of_products}}</p>
-        <p>Last updated: {{last_product_updated}}</p>
-        <p>First updated: {{first_product_published}}</p>
+      <form class="form_site" method="POST" action="{{ url_for('evaluate') }}">
+  <!--      <input type="hidden" id="custId" name="site_link" value="testtt">-->
+        <input name="data_link" value={{data_link}} readonly="readonly">
+        <div class="grid-wrapper">
+          <p>Site: {{link}}</p>
+          <p>Number of products: {{number_of_products}}</p>
+          <p>Last updated: {{last_product_updated}}</p>
+          <p>First updated: {{first_product_published}}</p>
+          <p>
+            <label for="niche-select">Niche: </label>
+            <select name="niche" id="niche-select">
+            {% for o in niche_list %}
+                <option value="{{ o }}">{{ o }}</option>
+            {% endfor %}
+            </select>
+          </p>
+          <p>
+            <label for="main_product-text">Main product: </label>
+            <input type = "text" name = "main_product" id = "main_product-text" placeholder="Enter main product" />
+          </p>
+          <p>
+            <label for="is_dropshipper-select">Dropshipper: </label>
+            <select name="is_dropshipper" id="is_dropshipper-select">
+              <option value="False" selected>False</option>
+              <option value="True">True</option>
+            </select>
+          </p>
+          <p>
+            <label for="is_branded_products-select">Branded products: </label>
+            <select name="is_branded_products" id="is_branded_products-select">
+              <option value="False" selected>False</option>
+              <option value="True">True</option>
+            </select>
+          </p>
+          <p>
+            <label for="our_ranking-select">Our ranking:</label>
+            <select name="our_ranking" id="our_ranking-select">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5" selected>5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </p>
         <p>
-          <select name="niche">
-          {% for o in niche_list %}
-              <option value="{{ o }}">{{ o }}</option>
-          {% endfor %}
-          </select>
+          <button type="submit" class="btn btn-default">Save, get the next One!!!</button>
         </p>
-        <p>
-          <label for="is_dropshipper-select">Choose is dropshipper:</label>
-          <select name="is_dropshipper" id="is_dropshipper-select">
-            <option value="False" selected>False</option>
-            <option value="True">True</option>
-          </select>
-        </p>
-        <p>
-          <label for="is_branded_products-select">Choose is branded products:</label>
-          <select name="is_branded_products" id="is_branded_products-select">
-            <option value="False" selected>False</option>
-            <option value="True">True</option>
-          </select>
-        </p>
-        <p>
-          <label for="our_ranking-select">our ranking:</label>
-          <select name="our_ranking" id="our_ranking-select">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5" selected>5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
-          </select>
-        </p>
-      <p>
-        <button type="submit" class="btn btn-default">Save, get the next One!!!</button>
-      </p>
-    </div>
-    </form>
-    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+      </div>
+      </form>
+      <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+      <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
   </body>
 </html>
