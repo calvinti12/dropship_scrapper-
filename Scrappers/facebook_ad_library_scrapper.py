@@ -87,8 +87,17 @@ def get_ads_by_page_id(site_link, headless):
     ads['instagram']['link'] = site_data[2]
     ads['youtube']['link'] = site_data[3]
     if page_id:
-        site_ads = scrapper(site_link, ads, headless=headless)
+        site_ads = scrapper(site_data[0], ads, headless=headless)
         return site_ads
+
+
+def extract_facebook_data(facebook_page_url, ads, headless=False):
+    req = urllib.request.Request(facebook_page_url, data=None, headers={
+            'User-Agent': UserAgent().random
+        })
+    web_page = urllib.request.urlopen(req).read()
+    soup = BeautifulSoup(web_page, "html.parser")
+    return soup
 
 
 def extract_facebook_page_id(facebook_page_url):
@@ -109,7 +118,8 @@ def extract_social_page_links(site_link):
         })
     web_page = urllib.request.urlopen(req).read()
     soup = BeautifulSoup(web_page, "lxml")
-    social_links = extract_social_links(soup.findAll('a', attrs={'href': re.compile("^http://")}), site_link)
+    raw_links = soup.findAll('a', attrs={'href': re.compile("^http://")}) + soup.findAll('a', attrs={'href': re.compile("^https://")})
+    social_links = extract_social_links(raw_links, site_link)
     return social_links
 
 

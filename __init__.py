@@ -56,7 +56,7 @@ def add_sites(site):
             site.add_facebook_ads(facebook_ads)
             print(f"Finish add facebook ads to {site.link}")
         else:
-            print(f"Finish {site.link} with facebook ads")
+            print(f"Finish {site.link} with no facebook ads")
         atlas.update_site(site)
     except Exception as e:
         print(f"Error to  {site.link} with {e}")
