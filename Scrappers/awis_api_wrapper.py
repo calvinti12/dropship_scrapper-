@@ -5,9 +5,9 @@ from dateutil.parser import parse
 global soup
 
 
-def get_rank(site):
+def get_rank(link):
     global soup
-    response = requests.get(f"https://awis.api.alexa.com/api?Action=UrlInfo&ResponseGroup=UsageStats&Url={site.link}",
+    response = requests.get(f"https://awis.api.alexa.com/api?Action=UrlInfo&ResponseGroup=UsageStats&Url={link}",
                             headers={"x-api-key": "0dnOHsO6en6z4TzwaQF0H3fTmpM92vIvaO6EgcwJ",
                             "Accept": "*/*",
                             "X-Amz-Date": "amzdate",

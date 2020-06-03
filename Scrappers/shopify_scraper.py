@@ -193,6 +193,6 @@ def analysis_site_test(link):
     except Exception as e:
         return f"Error in analysis_site {e}"
 
-    return jsonify(products)
+    return products
 
 

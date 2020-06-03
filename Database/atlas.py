@@ -6,7 +6,7 @@ global sites
 global sites_analysis
 global ads
 
-UPDATE_DATA_EVERY_DAYS = 2
+UPDATE_DATA_EVERY_DAYS = 1
 
 
 def toDate(date_string):
@@ -47,16 +47,6 @@ def add_site_analysis(site):
     sites_analysis.update_one({'link': site.link}, update_query, upsert=True)
 
 
-def evaluate_site(link, is_dropshipper, niche, main_product, is_branded_products):
-    update_query = {"$set": {
-        "is_dropshipper": is_dropshipper,
-        "niche": niche,
-        "main_product": main_product,
-        "is_branded_products": is_branded_products
-    }}
-    sites.update_one({'link': link}, update_query, upsert=False)
-
-
 class MongoAtlas:
     def __init__(self):
         global sites
@@ -73,6 +63,7 @@ class MongoAtlas:
     def update_site(self, site):
         update_query = {"$set": {
             "ranking": site.ranking,
+            "ads": site.ads,
             "link": site.link,
             "number_of_product": site.number_of_products,
             "strong_collection": site.strong_collection,
@@ -97,3 +88,28 @@ class MongoAtlas:
         except Exception as e:
             print("Cant get_sites_to_update", e)
         return sites_list
+
+    def evaluate_site(self, link, is_dropshipper, niche, main_product, is_branded_products, our_ranking):
+        update_query = {"$set": {
+            "is_dropshipper": is_dropshipper,
+            "niche": niche,
+            "main_product": main_product,
+            "is_branded_products": is_branded_products,
+            "our_ranking": our_ranking
+        }}
+        print(f"save site evaluate {link} is_dropshipper {is_dropshipper} niche {niche} is_branded_products {is_branded_products} our_ranking {our_ranking}")
+        sites.update_one({'link': link}, update_query, upsert=False)
+
+    def get_site_to_evaluate(self):
+
+        update_date = parse(str(datetime.date.today() - datetime.timedelta(days=30)))
+
+        try:
+            site = sites.find_one({"is_dropshipper": {'$exists': False},
+                                   "number_of_product": {'$gte': 1, '$lte': 10},
+                                   "last_product_updated": {'$gte': update_date}
+                                   },
+                                  {'_id': 0, 'link': 1, 'number_of_product': 1, 'last_product_updated': 1, 'first_product_published': 1})
+            return site
+        except Exception as e:
+            print("Cant get_site_to_evaluate", e)
