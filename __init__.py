@@ -6,6 +6,7 @@ from Google.google_function import get_store_products
 from Google.google_function import scrape_my_ips
 from Google.google_function import get_facebook_ads
 from concurrent.futures import ThreadPoolExecutor
+import random
 from flask import Flask, request, jsonify
 
 # gts = GoogleTrends(["Acupressure Relief Mat"])
@@ -63,6 +64,7 @@ def add_sites(site):
 
 def start_update_all():
     sites_to_update = atlas.get_sites_to_update(sites_sheet.get_sites())
+    random.shuffle(sites_to_update)
     while len(sites_to_update) > 0:
         scrape_sites(sites_to_update)
     print(f"Finish all sites")
