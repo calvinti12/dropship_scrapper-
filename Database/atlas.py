@@ -63,6 +63,7 @@ class MongoAtlas:
     def update_site(self, site):
         update_query = {"$set": {
             "ranking": site.ranking,
+            "ads": site.ads,
             "link": site.link,
             "number_of_product": site.number_of_products,
             "strong_collection": site.strong_collection,

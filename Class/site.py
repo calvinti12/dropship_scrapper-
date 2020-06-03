@@ -9,6 +9,13 @@ class Site:
         self.daily_visitors = int(daily_visitors.replace(',', ''))
         self.monthly_visitors = int(monthly_visitors.replace(',', ''))
         self.stats = {}
+        self.ads = {
+            "facebook": {},
+            "twitter": {},
+            "instagram": {},
+            "youtube": {},
+            "google": {},
+        }
         self.number_of_products = 0
         self.avg_product_price = 0
         self.median_product_price = 0
@@ -20,6 +27,9 @@ class Site:
 
     def add_stats(self, stats):
         self.stats = stats
+
+    def add_facebook_ads(self, ads):
+        self.ads['facebook'] = ads
 
     def set_products(self, number_of_products, avg_product_price, median_product_price, strong_collection, strong_type, last_updated, first_publish, products):
         self.number_of_products = number_of_products

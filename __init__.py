@@ -4,6 +4,7 @@ from Frontpages.evaluate import open_site
 from Scrappers.awis_api_wrapper import get_rank
 from Google.google_function import get_store_products
 from Google.google_function import scrape_my_ips
+from Google.google_function import get_facebook_ads
 from concurrent.futures import ThreadPoolExecutor
 from flask import Flask, request, jsonify
 
@@ -35,23 +36,27 @@ def update_all():
 
 
 def scrape_sites(sites):
-    with ThreadPoolExecutor(max_workers=100) as executor:
+    with ThreadPoolExecutor(max_workers=1) as executor:
         for site in sites:
             executor.submit(add_sites, site)
 
 
 def add_sites(site):
     try:
-        site.add_stats(get_rank(site))
+        site.add_stats(get_rank(site.link))
         products = get_store_products(site.link)
+        facebook_ads = get_facebook_ads(site.link)
         if products:
             site.set_products_lean(products)
-            atlas.update_site(site)
-            print(f"Finish {site.link}")
+            print(f"Finish add products to {site.link}")
         else:
-            atlas.update_site(site)
             print(f"Finish {site.link} with no products")
-
+        if facebook_ads:
+            site.add_facebook_ads(facebook_ads)
+            print(f"Finish add facebook ads to {site.link}")
+        else:
+            print(f"Finish {site.link} with facebook ads")
+        atlas.update_site(site)
     except Exception as e:
         print(f"Error to  {site.link} with {e}")
 
@@ -68,4 +73,6 @@ def get_all_shops():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    start_update_all()
+    # add_sites("")
+    # app.run(debug=True)
