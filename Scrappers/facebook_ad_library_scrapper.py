@@ -14,6 +14,12 @@ NUMBER_OF_LIKES = '_8wi7'
 PAGE_CREATED = '_3-99'
 ACTIVE_ADS = '_7gn2'
 LATEST_RUNNING_AD = '_7jwu'
+headers = {
+    'Accept': '*/*',
+    'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8,fr;q=0.7',
+    'Connection': 'keep-alive',
+    'User-Agent': '',
+}
 
 
 def class_to_css_selector(clazz):
@@ -30,8 +36,9 @@ def scrapper(site_link, ads):
             'impression_search_field': "has_impressions_lifetime",
             'view_all_page_id': ads['facebook']['page_id']
         }
+        headers['User-Agent'] = UserAgent().random
         session = HTMLSession(browser_args=["--no-sandbox", "--user-agent=" + UserAgent().random])
-        r = session.get(FACEBOOK_ADS_LIBRARY.format(urlencode(qs)))
+        r = session.get(FACEBOOK_ADS_LIBRARY.format(urlencode(qs)), headers=headers)
         r.html.render(timeout=30)
         r.html.find(class_to_css_selector(ACTIVE_ADS), first=True)
 
@@ -71,11 +78,7 @@ def get_ads_by_page_id(site_link):
 
 
 def extract_facebook_page_id(facebook_page_url):
-    req = urllib.request.Request(facebook_page_url, data=None, headers={
-            'User-Agent': UserAgent().random
-        })
-    web_page = urllib.request.urlopen(req).read()
-    soup = BeautifulSoup(web_page, "lxml")
+    soup = get_soup(facebook_page_url)
     ios_page = soup.find("meta", property="al:ios:url")
     android_page = soup.find("meta", property="al:android:url")
     page_id = extract_page_id(ios_page, android_page)
@@ -83,14 +86,17 @@ def extract_facebook_page_id(facebook_page_url):
 
 
 def extract_social_page_links(site_link):
-    req = urllib.request.Request(site_link, data=None, headers={
-            'User-Agent': UserAgent().random
-        })
-    web_page = urllib.request.urlopen(req).read()
-    soup = BeautifulSoup(web_page, "lxml")
+    soup = get_soup(site_link)
     raw_links = soup.findAll('a', attrs={'href': re.compile("^http://")}) + soup.findAll('a', attrs={'href': re.compile("^https://")})
     social_links = extract_social_links(raw_links, site_link)
     return social_links
+
+
+def get_soup(link):
+    headers['User-Agent'] = UserAgent().random
+    req = urllib.request.Request(link, data=None, headers=headers)
+    web_page = urllib.request.urlopen(req).read()
+    return BeautifulSoup(web_page, "lxml")
 
 
 def extract_date(date_str):

@@ -4,9 +4,11 @@ from Scrappers.shopify_scraper import analysis_site_test
 from Scrappers.my_ips_ms_scrapper import analysis_page_test
 from Scrappers.facebook_ad_library_scrapper import analysis_facebook_ads_test
 from concurrent.futures import ThreadPoolExecutor
+
 STORE_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/store_scrapper_"
 MYIPS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/myips_scrapper_"
 FACEBOOK_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/facebook_scrapper_"
+
 NUMBER_OF_WORKERS = 1
 DEBUG = False
 
