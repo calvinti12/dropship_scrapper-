@@ -44,7 +44,7 @@ class NicheScrapper:
         options.add_argument('no-sandbox')
         options.add_argument("headless")
 
-        driver = webdriver.Chrome(executable_path=r"chromedriver.exe", chrome_options=options)
+        driver = webdriver.Chrome(executable_path=r"../chromedriver.exe", chrome_options=options)
         actions = ActionChains(driver)
         driver.get(self.LINK)
         send_keys_decimal(username, driver.find_element_by_id("email-input"))

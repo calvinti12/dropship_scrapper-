@@ -1,8 +1,8 @@
 import json
 import urllib.request
-from Scrappers.shopify_scraper import analysis_site_test
-from Scrappers.my_ips_ms_scrapper import analysis_page_test
-from Scrappers.facebook_ad_library_scrapper import analysis_facebook_data_test
+from Scrappers.Shops.shopify_scraper import analysis_site_test
+from Scrappers.Shops.my_ips_ms_scrapper import analysis_page_test
+from Scrappers.Ads.facebook_ad_library_scrapper import analysis_facebook_data_test
 from concurrent.futures import ThreadPoolExecutor
 
 

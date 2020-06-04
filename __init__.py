@@ -1,14 +1,14 @@
 from Google.google_sheets import GoogleSheets
 from Database.atlas import MongoAtlas
 from Frontpages.evaluate import open_site
-from Scrappers.awis_api_wrapper import get_rank
+from Scrappers.Stats.awis_api_wrapper import get_rank
 from Google.google_function import get_store_products
 from Google.google_function import scrape_my_ips
 from Google.google_function import get_facebook_data
 from Google.google_function import get_ads_data_test
 from concurrent.futures import ThreadPoolExecutor
 import random
-from flask import Flask, request, jsonify
+from flask import Flask, request
 
 # gts = GoogleTrends(["Acupressure Relief Mat"])
 sites_sheet = GoogleSheets('Sites & products')
@@ -38,7 +38,7 @@ def update_all():
 
 
 def scrape_sites(sites):
-    with ThreadPoolExecutor(max_workers=100) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         for site in sites:
             executor.submit(add_sites, site)
 

@@ -30,10 +30,10 @@ def add_site_analysis(site):
         "$push": {"stats": {
             "$each": [{
                 "ranking": site.ranking,
-                "daily_visitors": '{:,}'.format(int(site.daily_visitors)),
-                "monthly_visitors": '{:,}'.format(int(site.monthly_visitors)),
-                "avg_product_price": '{:,}'.format(int(site.avg_product_price)),
-                "median_product_price": '{:,}'.format(int(site.median_product_price)),
+                "daily_visitors": int(site.daily_visitors),
+                "monthly_visitors": int(site.monthly_visitors),
+                "avg_product_price": int(site.avg_product_price),
+                "median_product_price": int(site.median_product_price),
                 "number_of_product": site.number_of_products,
                 "strong_collection": site.strong_collection,
                 "strong_product": site.strong_type,
@@ -68,7 +68,7 @@ class MongoAtlas:
             "number_of_product": site.number_of_products,
             "strong_collection": site.strong_collection,
             "strong_product": site.strong_type,
-            "daily_visitors": '{:,}'.format(int(site.daily_visitors)),
+            "daily_visitors": int(site.daily_visitors),
             "last_product_updated": toDate(site.last_updated),
             "first_product_published": toDate(site.first_publish),
             "updated": datetime.datetime.now(datetime.timezone.utc)

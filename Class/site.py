@@ -66,8 +66,8 @@ class Site:
         ads['facebook'] = {
             'active_ads': int(ads['facebook']['active_ads']),
             'instagram_followers': int(ads['facebook']['instagram_followers'].replace(',', '')),
-            'likes': int(ads['facebook']['likes']),
-            'latest_running_ad': toDate(ads['facebook']['latest_running_ad'].replace(',', '')),
+            'likes': int(ads['facebook']['likes'].replace(',', '')),
+            'latest_running_ad': toDate(ads['facebook']['latest_running_ad']),
             'link': ads['facebook']['link'],
             'niche': ads['facebook']['niche'],
             'page_id': int(ads['facebook']['page_id']),

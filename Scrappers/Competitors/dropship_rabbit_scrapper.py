@@ -63,7 +63,7 @@ class DropShipRabbitScrapper:
         options = webdriver.ChromeOptions()
         # options.add_argument("headless")
 
-        driver = webdriver.Chrome(executable_path=r"chromedriver.exe", chrome_options=options)
+        driver = webdriver.Chrome(executable_path=r"../chromedriver.exe", chrome_options=options)
         driver.get(self.LINK)
         time.sleep(7)
 

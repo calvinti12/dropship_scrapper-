@@ -12,10 +12,10 @@ HTML_TEXT = "<p>Site:TEST</p>" \
             "< option value = 'TEST' > TEST < / option >" \
             "</select>"
 
+
 class SiteEvaluation:
 
     FIRST_ITEM = "//*[@id='Content']/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/ul[1]/li[1]/div[2]/h4[1]/a[1]"
-
 
     def __init__(self):
         global driver
@@ -28,8 +28,6 @@ class SiteEvaluation:
     def get_site(self, link):
         driver.get(link)
         time.sleep(7)
-
-
 
         elm = driver.find_element_by_id("shopify-section-header")
         driver.execute_script("arguments[0].innerHTML =" + HTML_TEXT, elm)
