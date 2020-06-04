@@ -11,7 +11,7 @@ UPDATE_DATA_EVERY_DAYS = 1
 
 def toDate(date_string):
     try:
-        return parse(date_string)
+        return parse(date_string).astimezone()
     except Exception as e:
         return date_string
 

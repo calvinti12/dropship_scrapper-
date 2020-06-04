@@ -1,8 +1,38 @@
 import statistics
+from dateutil.parser import parse
 
 
 def extract_number(string_number):
     return int("".join(filter(str.isdigit, string_number)))
+
+
+def extract_int(string_number):
+    try:
+        return int(string_number)
+    except:
+        return string_number
+
+
+def extract_float(string_number):
+    try:
+        return float(string_number)
+    except:
+        return string_number
+
+
+def format_product(product):
+    product['price'] = extract_float(product['price'])
+    product['variants'] = extract_int(product['variants'])
+    product['published_at'] = toDate(product['published_at'])
+    product['updated_at'] = toDate(product['updated_at'])
+    return product
+
+
+def toDate(date_string):
+    try:
+        return parse(date_string).astimezone()
+    except Exception as e:
+        return date_string
 
 
 class Site:
@@ -33,6 +63,17 @@ class Site:
 
     def add_ads(self, ads):
         self.ads = ads
+        ads['facebook'] = {
+            'active_ads': int(ads['facebook']['active_ads']),
+            'instagram_followers': int(ads['facebook']['instagram_followers'].replace(',', '')),
+            'likes': int(ads['facebook']['likes']),
+            'latest_running_ad': toDate(ads['facebook']['latest_running_ad'].replace(',', '')),
+            'link': ads['facebook']['link'],
+            'niche': ads['facebook']['niche'],
+            'page_id': int(ads['facebook']['page_id']),
+            'page_created': toDate(ads['facebook']['page_created']),
+            'updated': toDate(ads['facebook']['updated']),
+        }
 
     def set_products(self, number_of_products, avg_product_price, median_product_price, strong_collection, strong_type, last_updated, first_publish, products):
         self.number_of_products = number_of_products
@@ -42,7 +83,8 @@ class Site:
         self.strong_type = strong_type
         self.last_updated = last_updated
         self.first_publish = first_publish
-        self.products = products
+        if len(products) > 0:
+            self.products = list(map(format_product, products))
 
     def set_products_lean(self, products):
         self.set_products(len(products['prices']), products['product_avg'] / len(products['prices']),
