@@ -49,12 +49,10 @@ def add_sites(site):
         facebook_ads = get_facebook_ads(site.link)
         if products:
             site.set_products_lean(products)
-            print(f"Finish add products to {site.link}")
         else:
             print(f"Finish {site.link} with no products")
         if facebook_ads:
             site.add_facebook_ads(facebook_ads)
-            print(f"Finish add facebook ads to {site.link}")
         else:
             print(f"Finish {site.link} with no facebook ads")
         atlas.update_site(site)
@@ -76,5 +74,5 @@ def get_all_shops():
 
 if __name__ == '__main__':
     start_update_all()
-    # add_sites("")
+    # add_sites("benisouk.com")
     # app.run(debug=True)

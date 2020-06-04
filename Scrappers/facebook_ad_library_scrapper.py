@@ -1,16 +1,14 @@
 import re
-from time import sleep
-from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
 from dateutil.parser import parse
 from urllib.parse import urlencode
+from requests_html import HTMLSession
 import urllib.request
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from fake_useragent import UserAgent
 from bs4 import BeautifulSoup
 from flask import jsonify
 import datetime
 
+FACEBOOK_ADS_LIBRARY = 'https://www.facebook.com/ads/library/?{}'
 AD_CALZZ = '_7owt'
 NUMBER_OF_LIKES = '_8wi7'
 PAGE_CREATED = '_3-99'
@@ -23,16 +21,7 @@ def class_to_css_selector(clazz):
     return ".{}".format(clazz.replace(' ', '.'))
 
 
-def scrapper(site_link, ads, headless=False):
-    options = webdriver.ChromeOptions()
-    if headless:
-        options.add_argument('headless')
-
-    caps = DesiredCapabilities.CHROME
-    caps['loggingPrefs'] = {'performance': 'ALL'}
-
-    driver = webdriver.Chrome(options=options, desired_capabilities=caps)
-    driver.implicitly_wait(10)
+def scrapper(site_link, ads):
     try:
         qs = {
             'active_status': "all",
@@ -41,41 +30,31 @@ def scrapper(site_link, ads, headless=False):
             'impression_search_field': "has_impressions_lifetime",
             'view_all_page_id': ads['facebook']['page_id']
         }
-        driver.get(
-            'https://www.facebook.com/ads/library/?{}'.format(urlencode(qs)))
-        sleep(5)
-        try:
-            driver.find_element_by_xpath('//div[contains(text(),"There are no ads matching")]')
-            print('No results')
-            return
-        except NoSuchElementException:
-            pass
+        session = HTMLSession(browser_args=["--no-sandbox", "--user-agent=" + UserAgent().random])
+        r = session.get(FACEBOOK_ADS_LIBRARY.format(urlencode(qs)))
+        r.html.render(timeout=30)
+        r.html.find(class_to_css_selector(ACTIVE_ADS), first=True)
 
-        # Find the ad class
-        print(f"Finding ad class for page_id {ads['facebook']['page_id']}")
-
-        new_ad_divs = driver.find_elements_by_css_selector(class_to_css_selector(AD_CALZZ))
-        likes_followers = driver.find_elements_by_css_selector(class_to_css_selector(NUMBER_OF_LIKES))
+        ads['facebook']['active_ads'] = int(re.findall(r'\d+', r.html.find(class_to_css_selector(ACTIVE_ADS), first=True).text.replace(',', ''))[0])
+        likes_followers = r.html.find(class_to_css_selector(NUMBER_OF_LIKES))
         ads['facebook']['likes'] = int(likes_followers[0].text.split('\n')[0].replace(',', ''))
         ads['facebook']['niche'] = likes_followers[0].text.split('\n')[2]
+
         if len(likes_followers) > 1:
             ads['facebook']['instagram_followers'] = int(likes_followers[1].text.split(' ')[0].replace(',', ''))
-        ads['facebook']['page_created'] = parse(driver.find_elements_by_css_selector(class_to_css_selector(PAGE_CREATED))[2].text).date()
-        ads['facebook']['active_ads'] = re.findall(r'\d+', driver.find_element_by_css_selector(class_to_css_selector(ACTIVE_ADS)).text.replace(',', ''))[0]
+
+        ads['facebook']['page_created'] = parse(r.html.find(class_to_css_selector(PAGE_CREATED))[2].text).date()
+        new_ad_divs = r.html.find(class_to_css_selector(AD_CALZZ))
         for ad_div in new_ad_divs:
-            updated = extract_date(ad_div.find_element_by_css_selector(class_to_css_selector(LATEST_RUNNING_AD)).text)
+            updated = extract_date(ad_div.find(class_to_css_selector(LATEST_RUNNING_AD), first=True).text)
             if parse(ads['facebook']['latest_running_ad']).date() < updated:
                 ads['facebook']['latest_running_ad'] = str(updated)
     except Exception as e:
         print(f"Error to getting facebook ads for site_link  {site_link} with {e}")
-    finally:
-        driver.close()
-        driver.quit()
-    print(f'Done get ads for site_link {site_link}')
     return ads
 
 
-def get_ads_by_page_id(site_link, headless):
+def get_ads_by_page_id(site_link):
     ads = init_ads()
     site_link = fix_url(site_link)
     site_data = extract_social_page_links(site_link)
@@ -87,17 +66,8 @@ def get_ads_by_page_id(site_link, headless):
     ads['instagram']['link'] = site_data[2]
     ads['youtube']['link'] = site_data[3]
     if page_id:
-        site_ads = scrapper(site_data[0], ads, headless=headless)
+        site_ads = scrapper(site_data[0], ads)
         return site_ads
-
-
-def extract_facebook_data(facebook_page_url, ads, headless=False):
-    req = urllib.request.Request(facebook_page_url, data=None, headers={
-            'User-Agent': UserAgent().random
-        })
-    web_page = urllib.request.urlopen(req).read()
-    soup = BeautifulSoup(web_page, "html.parser")
-    return soup
 
 
 def extract_facebook_page_id(facebook_page_url):
@@ -160,16 +130,16 @@ def analysis_facebook_ads(request):
     else:
         return "Not valid site_link"
     try:
-        return jsonify(get_ads_by_page_id(site_link, False))
+        return jsonify(get_ads_by_page_id(site_link))
     except Exception as e:
-        return f"Error in analysis_facebook_ads {e}"
+        print(f"Error in analysis_facebook_ads {e}")
 
 
 def analysis_facebook_ads_test(site_link):
     try:
-        return get_ads_by_page_id(site_link, True)
+        return get_ads_by_page_id(site_link)
     except Exception as e:
-        return f"Error in analysis_facebook_ads {e}"
+        print(f"Error in analysis_facebook_ads_test {e}")
 
 
 def init_ads():
