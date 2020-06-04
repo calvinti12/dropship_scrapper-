@@ -12,3 +12,4 @@ selenium==3.141.0
 asyncio~=3.4.3
 bs4~=0.0.1
 requests_html==0.10.0
+chromedriver-binary==84.0.4147.30.0

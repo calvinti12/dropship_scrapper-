@@ -1,64 +1,19 @@
 import re
-from dateutil.parser import parse
-from urllib.parse import urlencode
-from requests_html import HTMLSession
+import json
 import urllib.request
 from fake_useragent import UserAgent
 from bs4 import BeautifulSoup
 from flask import jsonify
 import datetime
 
-FACEBOOK_ADS_LIBRARY = 'https://www.facebook.com/ads/library/?{}'
-AD_CALZZ = '_7owt'
-NUMBER_OF_LIKES = '_8wi7'
-PAGE_CREATED = '_3-99'
-ACTIVE_ADS = '_7gn2'
-LATEST_RUNNING_AD = '_7jwu'
+ADS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/ads_scrapper_"
+
 headers = {
     'Accept': '*/*',
     'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8,fr;q=0.7',
     'Connection': 'keep-alive',
     'User-Agent': '',
 }
-
-
-def class_to_css_selector(clazz):
-    # This handles compound class names.
-    return ".{}".format(clazz.replace(' ', '.'))
-
-
-def scrapper(site_link, ads):
-    try:
-        qs = {
-            'active_status': "all",
-            'country': "ALL",
-            'ad_type': "all",
-            'impression_search_field': "has_impressions_lifetime",
-            'view_all_page_id': ads['facebook']['page_id']
-        }
-        headers['User-Agent'] = UserAgent().random
-        session = HTMLSession(browser_args=["--no-sandbox", "--user-agent=" + UserAgent().random])
-        r = session.get(FACEBOOK_ADS_LIBRARY.format(urlencode(qs)), headers=headers)
-        r.html.render(timeout=30)
-        r.html.find(class_to_css_selector(ACTIVE_ADS), first=True)
-
-        ads['facebook']['active_ads'] = int(re.findall(r'\d+', r.html.find(class_to_css_selector(ACTIVE_ADS), first=True).text.replace(',', ''))[0])
-        likes_followers = r.html.find(class_to_css_selector(NUMBER_OF_LIKES))
-        ads['facebook']['likes'] = int(likes_followers[0].text.split('\n')[0].replace(',', ''))
-        ads['facebook']['niche'] = likes_followers[0].text.split('\n')[2]
-
-        if len(likes_followers) > 1:
-            ads['facebook']['instagram_followers'] = int(likes_followers[1].text.split(' ')[0].replace(',', ''))
-
-        ads['facebook']['page_created'] = parse(r.html.find(class_to_css_selector(PAGE_CREATED))[2].text).date()
-        new_ad_divs = r.html.find(class_to_css_selector(AD_CALZZ))
-        for ad_div in new_ad_divs:
-            updated = extract_date(ad_div.find(class_to_css_selector(LATEST_RUNNING_AD), first=True).text)
-            if parse(ads['facebook']['latest_running_ad']).date() < updated:
-                ads['facebook']['latest_running_ad'] = str(updated)
-    except Exception as e:
-        print(f"Error to getting facebook ads for site_link  {site_link} with {e}")
-    return ads
 
 
 def get_ads_by_page_id(site_link):
@@ -73,8 +28,10 @@ def get_ads_by_page_id(site_link):
     ads['instagram']['link'] = site_data[2]
     ads['youtube']['link'] = site_data[3]
     if page_id:
-        site_ads = scrapper(site_data[0], ads)
-        return site_ads
+        facebook_ads = get_ads_data(page_id, site_link)
+        ads['facebook'] = facebook_ads
+        ads['facebook']['link'] = site_data[0]
+    return ads
 
 
 def extract_facebook_page_id(facebook_page_url):
@@ -97,10 +54,6 @@ def get_soup(link):
     req = urllib.request.Request(link, data=None, headers=headers)
     web_page = urllib.request.urlopen(req).read()
     return BeautifulSoup(web_page, "lxml")
-
-
-def extract_date(date_str):
-    return parse(date_str.lower().replace('started running on ', '')).date()
 
 
 def extract_page_id(ios_page, android_page):
@@ -129,10 +82,10 @@ def analysis_facebook_ads(request):
     request_json = request.get_json(silent=True)
     request_args = request.args
 
-    if request_json and 'site_link' in request_json:
-        site_link = request_json['site_link']
-    elif request_args and 'site_link' in request_args:
-        site_link = request_args['site_link']
+    if request_json and 'link' in request_json:
+        site_link = request_json['link']
+    elif request_args and 'link' in request_args:
+        site_link = request_args['link']
     else:
         return "Not valid site_link"
     try:
@@ -141,11 +94,22 @@ def analysis_facebook_ads(request):
         print(f"Error in analysis_facebook_ads {e}")
 
 
-def analysis_facebook_ads_test(site_link):
+def analysis_facebook_data_test(site_link):
     try:
         return get_ads_by_page_id(site_link)
     except Exception as e:
         print(f"Error in analysis_facebook_ads_test {e}")
+
+
+def get_ads_data(page_id, site_link):
+    scrape_number = 1
+    try:
+        req = urllib.request.Request(ADS_SCRAPPER_LINK + str(scrape_number) + '?link={}'.format(page_id))
+        data = urllib.request.urlopen(req).read()
+        ads = json.loads(data.decode())
+        return ads
+    except Exception as e:
+        print(f"Error in get_ads_data link {site_link}", e)
 
 
 def init_ads():

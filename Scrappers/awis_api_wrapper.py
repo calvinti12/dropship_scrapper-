@@ -5,6 +5,20 @@ from dateutil.parser import parse
 global soup
 
 
+def extract_int(string_number):
+    try:
+        return int(string_number.replace('%', ''))
+    except:
+        return string_number.replace('%', '')
+
+
+def extract_float(string_number):
+    try:
+        return float(string_number.replace('%', ''))
+    except:
+        return string_number.replace('%', '')
+
+
 def get_rank(link):
     global soup
     response = requests.get(f"https://awis.api.alexa.com/api?Action=UrlInfo&ResponseGroup=UsageStats&Url={link}",
@@ -30,18 +44,18 @@ def extract_stats(stats):
     try:
         stat = {
             "stats_date": '',
-            "rank": stats.Rank.Value.get_text(),
-            "rank_delta": stats.Rank.Delta.get_text(),
-            "reach": stats.Reach.Rank.Value.get_text(),
-            "reach_delta": stats.Reach.Rank.Delta.get_text(),
-            "reach_per_million": stats.Reach.PerMillion.Value.get_text(),
-            "reach_per_million_delta": stats.Reach.PerMillion.Delta.get_text(),
-            "page_views_rank": stats.PageViews.Rank.Value.get_text(),
-            "page_views_delta": stats.PageViews.Rank.Delta.get_text(),
-            "page_views_per_million": stats.PageViews.PerMillion.Value.get_text(),
-            "page_views_per_million_delta": stats.PageViews.PerMillion.Delta.get_text(),
-            "page_views_per_user": stats.PageViews.PerUser.Value.get_text(),
-            "page_views_per_user_delta": stats.PageViews.PerUser.Delta.get_text()
+            "rank": extract_int(stats.Rank.Value.get_text()),
+            "rank_delta": extract_int(stats.Rank.Delta.get_text()),
+            "reach": extract_int(stats.Reach.Rank.Value.get_text()),
+            "reach_delta": extract_int(stats.Reach.Rank.Delta.get_text()),
+            "reach_per_million": extract_float(stats.Reach.PerMillion.Value.get_text()),
+            "reach_per_million_delta": extract_float(stats.Reach.PerMillion.Delta.get_text()),
+            "page_views_rank": extract_int(stats.PageViews.Rank.Value.get_text()),
+            "page_views_delta": extract_int(stats.PageViews.Rank.Delta.get_text()),
+            "page_views_per_million": extract_float(stats.PageViews.PerMillion.Value.get_text()),
+            "page_views_per_million_delta": extract_float(stats.PageViews.PerMillion.Delta.get_text()),
+            "page_views_per_user": extract_float(stats.PageViews.PerUser.Value.get_text()),
+            "page_views_per_user_delta": extract_float(stats.PageViews.PerUser.Delta.get_text())
         }
         if stats.find('Months'):
             stat["stats_date"] = parse(str(datetime.date.today() - datetime.timedelta(days=int(stats.TimeRange.Months.get_text())*30)))
@@ -53,5 +67,5 @@ def extract_stats(stats):
         return []
 
 
-class Awis_api:
+class AwisApi:
     pass

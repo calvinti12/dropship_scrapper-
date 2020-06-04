@@ -59,10 +59,10 @@ def analysis_page(request):
     request_json = request.get_json(silent=True)
     request_args = request.args
 
-    if request_json and 'page' in request_json:
-        page = request_json['page']
-    elif request_args and 'page' in request_args:
-        page = request_args['page']
+    if request_json and 'link' in request_json:
+        page = request_json['link']
+    elif request_args and 'link' in request_args:
+        page = request_args['link']
     else:
         return "Not valid page"
 

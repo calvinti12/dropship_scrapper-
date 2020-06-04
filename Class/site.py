@@ -1,10 +1,14 @@
 import statistics
 
 
+def extract_number(string_number):
+    return int("".join(filter(str.isdigit, string_number)))
+
+
 class Site:
     def __init__(self, row_number, ranking, link, daily_visitors, monthly_visitors):
         self.row_number = row_number
-        self.ranking = ranking
+        self.ranking = extract_number(ranking.replace(',', ''))
         self.link = link
         self.daily_visitors = int(daily_visitors.replace(',', ''))
         self.monthly_visitors = int(monthly_visitors.replace(',', ''))
@@ -13,8 +17,7 @@ class Site:
             "facebook": {},
             "twitter": {},
             "instagram": {},
-            "youtube": {},
-            "google": {},
+            "youtube": {}
         }
         self.number_of_products = 0
         self.avg_product_price = 0
@@ -28,8 +31,8 @@ class Site:
     def add_stats(self, stats):
         self.stats = stats
 
-    def add_facebook_ads(self, ads):
-        self.ads['facebook'] = ads
+    def add_ads(self, ads):
+        self.ads = ads
 
     def set_products(self, number_of_products, avg_product_price, median_product_price, strong_collection, strong_type, last_updated, first_publish, products):
         self.number_of_products = number_of_products
