@@ -62,10 +62,6 @@ class Site:
         self.stats = stats
 
     def add_ads(self, ads):
-        if "page_id" in ads['facebook']:
-            page_id = int(ads['facebook']['page_id'])
-        else:
-            page_id = 0
         self.ads = ads
         ads['facebook'] = {
             'active_ads': int(ads['facebook']['active_ads']),
@@ -74,7 +70,7 @@ class Site:
             'latest_running_ad': toDate(ads['facebook']['latest_running_ad']),
             'link': ads['facebook']['link'],
             'niche': ads['facebook']['niche'],
-            'page_id': page_id,
+            'page_id': ads['facebook']['page_id'],
             'page_created': toDate(ads['facebook']['page_created']),
             'updated': toDate(ads['facebook']['updated']),
         }

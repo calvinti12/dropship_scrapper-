@@ -145,5 +145,4 @@ def fix_url(url):
     if not fixed_url.startswith('http://') and \
             not fixed_url.startswith('https://'):
         fixed_url = 'https://' + fixed_url
-
     return fixed_url.rstrip('/')

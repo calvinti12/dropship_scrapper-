@@ -8,6 +8,8 @@ from Google.google_function import scrape_my_ips
 from Google.google_function import get_facebook_data
 from Google.google_function import get_ads_data_test
 from concurrent.futures import ThreadPoolExecutor
+from concurrent import futures
+import multiprocessing
 import random
 from flask import Flask, request
 
@@ -46,12 +48,19 @@ def scrape_sites(sites):
             executor.submit(get_site_data, site)
 
 
+def load_url(link):
+    with futures.ThreadPoolExecutor(max_workers=3) as executor:
+        tasks = [executor.submit(get_rank, link),
+                 executor.submit(get_store_products, link),
+                 executor.submit(get_facebook_data, link)]
+
+        futures.wait(tasks, timeout=30000, return_when=futures.ALL_COMPLETED)
+        return tasks[0].result(), tasks[1].result(), tasks[2].result()
+
+
 def get_site_data(site):
     try:
-        stats = get_rank(site.link)
-        products = get_store_products(site.link)
-        facebook_ads = get_facebook_data(site.link)
-
+        stats, products, facebook_ads = load_url(site.link)
         if stats:
             site.add_stats(stats)
         else:
@@ -112,8 +121,16 @@ def test_site_data(link):
         get_site_data(site)
 
 
+def print_loading_data():
+    print("Number of cpu : ", multiprocessing.cpu_count())
+
+
 if __name__ == '__main__':
+    print_loading_data()
     start_update_all()
-    # test_site_data('innocenceandattitude.com')
+
+
+    # test_facebook_data('bodymattersgold.com')
+    # test_site_data('bodymattersgold.com')
     # test_facebook_ads('323363524483195')
     # app.run(debug=True)

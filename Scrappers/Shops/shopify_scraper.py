@@ -8,7 +8,7 @@ import urllib.request
 from urllib.error import HTTPError
 from flask import jsonify
 
-MAX_ITEM_TO_STORE = int(os.getenv('MAX_ITEM_TO_STORE', 100))
+MAX_ITEM_TO_STORE = int(os.getenv('MAX_ITEM_TO_STORE', 1000))
 
 
 def get_page(url, page, user_agent, collection_handle=None):
@@ -34,7 +34,7 @@ def get_page(url, page, user_agent, collection_handle=None):
         except HTTPError:
             print('Blocked! Sleeping...')
             number_retries -= 1
-            time.sleep(10)
+            time.sleep(20)
             print('Retrying')
 
     products = json.loads(data.decode())['products']
