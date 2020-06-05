@@ -15,3 +15,9 @@ resources:
   cpu: 1
   memory_gb: 2
   disk_size_gb: 10
+
+env_variables:
+  UPDATE_DATA_EVERY_DAYS: "2"
+  DEBUG: "False"
+  MAX_ITEM_TO_STORE: "1000"
+  SCRAPE_WORKERS: "100"
