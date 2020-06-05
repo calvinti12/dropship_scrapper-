@@ -1,3 +1,4 @@
+import os
 import json
 import time
 from collections import Counter
@@ -7,7 +8,7 @@ import urllib.request
 from urllib.error import HTTPError
 from flask import jsonify
 
-MAX_ITEM_TO_STORE = 1000
+MAX_ITEM_TO_STORE = int(os.getenv('MAX_ITEM_TO_STORE', 100))
 
 
 def get_page(url, page, user_agent, collection_handle=None):

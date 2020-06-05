@@ -1,3 +1,4 @@
+import os
 from Google.google_sheets import GoogleSheets
 from Database.atlas import MongoAtlas
 from Frontpages.evaluate import open_site
@@ -9,6 +10,8 @@ from Google.google_function import get_ads_data_test
 from concurrent.futures import ThreadPoolExecutor
 import random
 from flask import Flask, request
+
+SCRAPE_WORKERS = int(os.getenv('SCRAPE_WORKERS', 1))
 
 # gts = GoogleTrends(["Acupressure Relief Mat"])
 sites_sheet = GoogleSheets('Sites & products')
@@ -38,12 +41,12 @@ def update_all():
 
 
 def scrape_sites(sites):
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=SCRAPE_WORKERS) as executor:
         for site in sites:
-            executor.submit(add_sites, site)
+            executor.submit(get_site_data, site)
 
 
-def add_sites(site):
+def get_site_data(site):
     try:
         stats = get_rank(site.link)
         products = get_store_products(site.link)
@@ -77,6 +80,12 @@ def start_update_all():
     print(f"Finish all sites")
 
 
+def load_sites():
+    sites_to_update = atlas.get_sites_to_update(sites_sheet.get_sites())
+    random.shuffle(sites_to_update)
+    print(f"Finish all sites")
+
+
 def get_all_shops():
     scrape_my_ips(number_of_pages=3)
 
@@ -97,7 +106,14 @@ def test_facebook_ads(page_id):
         print(f"Finish {page_id} with no facebook ads")
 
 
+def test_site_data(link):
+    site = sites_sheet.get_site_by_link(link)
+    if site:
+        get_site_data(site)
+
+
 if __name__ == '__main__':
     start_update_all()
+    # test_site_data('innocenceandattitude.com')
     # test_facebook_ads('323363524483195')
     # app.run(debug=True)

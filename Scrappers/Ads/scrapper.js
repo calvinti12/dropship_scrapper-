@@ -92,5 +92,3 @@ const test = async () => {
     let ads = await get_ads(page_id)
     console.log(ads);
 };
-
-test()

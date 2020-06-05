@@ -1,9 +1,9 @@
 import json
+import os
 import urllib.request
 from Scrappers.Shops.shopify_scraper import analysis_site_test
 from Scrappers.Shops.my_ips_ms_scrapper import analysis_page_test
 from Scrappers.Ads.facebook_ad_library_scrapper import analysis_facebook_data_test
-from concurrent.futures import ThreadPoolExecutor
 
 
 STORE_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/store_scrapper_"
@@ -11,7 +11,7 @@ MYIPS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/m
 FACEBOOK_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/facebook_scrapper_"
 ADS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/ads_scrapper_"
 
-DEBUG = False
+DEBUG = eval(os.getenv('DEBUG', True))
 
 
 def get_store_products(link):
@@ -73,9 +73,8 @@ def get_ads_data_test(page_id):
 
 
 def scrape_my_ips(number_of_pages):
-    with ThreadPoolExecutor(max_workers=1) as executor:
-        for page in range(2, number_of_pages):
-            executor.submit(get_myips_link, page)
+    for page in range(2, number_of_pages):
+        get_myips_link(page)
 
 
 class GoogleFunction:

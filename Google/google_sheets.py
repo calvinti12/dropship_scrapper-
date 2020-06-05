@@ -1,18 +1,11 @@
 # https://gspread.readthedocs.io/en/latest/oauth2.html
-import asyncio
 import gspread
-import datetime
-from dateutil.parser import parse
 from Class.site import Site
 from google.oauth2.service_account import Credentials
 global my_ips_sites_list
 global sites
 
 scopes = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-
-UPDATED_COL = 15
-SITE_CONVERSION = 0.02
-UPDATE_DATA_EVERY_DAYS = 7
 
 
 def get_value(col, row):
@@ -47,4 +40,11 @@ class GoogleSheets:
 
     def get_sites(self):
         return sites
+
+    def get_site_by_link(self, link):
+        for site in sites:
+            if link == site.link:
+                return site
+        print(f"Cant get_site_by_link {link}")
+
 

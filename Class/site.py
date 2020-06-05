@@ -38,10 +38,10 @@ def toDate(date_string):
 class Site:
     def __init__(self, row_number, ranking, link, daily_visitors, monthly_visitors):
         self.row_number = row_number
-        self.ranking = extract_number(ranking.replace(',', ''))
+        self.ranking = extract_number(str(ranking.replace(',', '')))
         self.link = link
-        self.daily_visitors = int(daily_visitors.replace(',', ''))
-        self.monthly_visitors = int(monthly_visitors.replace(',', ''))
+        self.daily_visitors = int(str(daily_visitors).replace(',', ''))
+        self.monthly_visitors = int(str(monthly_visitors).replace(',', ''))
         self.stats = {}
         self.ads = {
             "facebook": {},
@@ -62,22 +62,26 @@ class Site:
         self.stats = stats
 
     def add_ads(self, ads):
+        if "page_id" in ads['facebook']:
+            page_id = int(ads['facebook']['page_id'])
+        else:
+            page_id = 0
         self.ads = ads
         ads['facebook'] = {
             'active_ads': int(ads['facebook']['active_ads']),
-            'instagram_followers': int(ads['facebook']['instagram_followers'].replace(',', '')),
-            'likes': int(ads['facebook']['likes'].replace(',', '')),
+            'instagram_followers': int(str(ads['facebook']['instagram_followers']).replace(',', '')),
+            'likes': int(str(ads['facebook']['likes']).replace(',', '')),
             'latest_running_ad': toDate(ads['facebook']['latest_running_ad']),
             'link': ads['facebook']['link'],
             'niche': ads['facebook']['niche'],
-            'page_id': int(ads['facebook']['page_id']),
+            'page_id': page_id,
             'page_created': toDate(ads['facebook']['page_created']),
             'updated': toDate(ads['facebook']['updated']),
         }
 
     def set_products(self, number_of_products, avg_product_price, median_product_price, strong_collection, strong_type, last_updated, first_publish, products):
         self.number_of_products = number_of_products
-        self.avg_product_price = avg_product_price
+        self.avg_product_price = float("{:.2f}".format(avg_product_price))
         self.median_product_price = median_product_price
         self.strong_collection = strong_collection
         self.strong_type = strong_type
@@ -90,3 +94,7 @@ class Site:
         self.set_products(len(products['prices']), products['product_avg'] / len(products['prices']),
                           statistics.median(products['prices']), products['strong_collection'],
                           products['strong_type'], products['last_updated'], products['first_publish'], products['products'])
+
+
+
+

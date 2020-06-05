@@ -1,12 +1,13 @@
 import pymongo
 import datetime
+import os
 from dateutil.parser import parse
 
 global sites
 global sites_analysis
 global ads
 
-UPDATE_DATA_EVERY_DAYS = 1
+UPDATE_DATA_EVERY_DAYS = int(os.getenv('UPDATE_DATA_EVERY_DAYS', 1))
 
 
 def toDate(date_string):
@@ -101,7 +102,6 @@ class MongoAtlas:
         sites.update_one({'link': link}, update_query, upsert=False)
 
     def get_site_to_evaluate(self):
-
         update_date = parse(str(datetime.date.today() - datetime.timedelta(days=30)))
 
         try:
@@ -113,3 +113,4 @@ class MongoAtlas:
             return site
         except Exception as e:
             print("Cant get_site_to_evaluate", e)
+
