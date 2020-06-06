@@ -59,21 +59,27 @@ class Site:
         self.products = []
 
     def add_stats(self, stats):
-        self.stats = stats
+        if stats:
+            self.stats = stats
+        else:
+            print(f"Finish {self.link} with no stats")
 
     def add_ads(self, ads):
-        self.ads = ads
-        ads['facebook'] = {
-            'active_ads': int(ads['facebook']['active_ads']),
-            'instagram_followers': int(str(ads['facebook']['instagram_followers']).replace(',', '')),
-            'likes': int(str(ads['facebook']['likes']).replace(',', '')),
-            'latest_running_ad': toDate(ads['facebook']['latest_running_ad']),
-            'link': ads['facebook']['link'],
-            'niche': ads['facebook']['niche'],
-            'page_id': ads['facebook']['page_id'],
-            'page_created': toDate(ads['facebook']['page_created']),
-            'updated': toDate(ads['facebook']['updated']),
-        }
+        if ads:
+            self.ads = ads
+            ads['facebook'] = {
+                'active_ads': int(ads['facebook']['active_ads']),
+                'instagram_followers': int(str(ads['facebook']['instagram_followers']).replace(',', '')),
+                'likes': int(str(ads['facebook']['likes']).replace(',', '')),
+                'latest_running_ad': toDate(ads['facebook']['latest_running_ad']),
+                'link': ads['facebook']['link'],
+                'niche': ads['facebook']['niche'],
+                'page_id': ads['facebook']['page_id'],
+                'page_created': toDate(ads['facebook']['page_created']),
+                'updated': toDate(ads['facebook']['updated']),
+            }
+        else:
+            print(f"Finish {self.link} with no facebook ads")
 
     def set_products(self, number_of_products, avg_product_price, median_product_price, strong_collection, strong_type, last_updated, first_publish, products):
         self.number_of_products = number_of_products
@@ -87,9 +93,15 @@ class Site:
             self.products = list(map(format_product, products))
 
     def set_products_lean(self, products):
-        self.set_products(len(products['prices']), products['product_avg'] / len(products['prices']),
-                          statistics.median(products['prices']), products['strong_collection'],
-                          products['strong_type'], products['last_updated'], products['first_publish'], products['products'])
+        if products:
+            self.set_products(len(products['prices']), products['product_avg'] / len(products['prices']),
+                              statistics.median(products['prices']), products['strong_collection'],
+                              products['strong_type'], products['last_updated'], products['first_publish'],
+                              products['products'])
+        else:
+            print(f"Finish {self.link} with no products")
+
+
 
 
 

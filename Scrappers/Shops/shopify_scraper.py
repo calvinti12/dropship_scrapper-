@@ -26,16 +26,14 @@ def get_page(url, page, user_agent, collection_handle=None):
     number_retries = 3
     while True:
         if number_retries == 0:
-            print(f'Stop after {number_retries} retries')
+            print(f'Stop after {number_retries} retries {full_url}')
             break
         try:
             data = urllib.request.urlopen(req).read()
             break
         except HTTPError:
-            print('Blocked! Sleeping...')
             number_retries -= 1
-            time.sleep(20)
-            print('Retrying')
+            time.sleep(5)
 
     products = json.loads(data.decode())['products']
     return products
@@ -55,16 +53,14 @@ def get_page_collections(url, user_agent):
         number_retries = 3
         while True:
             if number_retries == 0:
-                print(f'Stop after {number_retries} retries')
+                print(f'Stop after {number_retries} retries {full_url}')
                 break
             try:
                 data = urllib.request.urlopen(req).read()
                 break
             except HTTPError:
-                print('Blocked! Sleeping...')
                 number_retries -= 1
-                time.sleep(10)
-                print('Retrying')
+                time.sleep(5)
 
         cols = json.loads(data.decode())['collections']
         if not cols:

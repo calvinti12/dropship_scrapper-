@@ -61,20 +61,9 @@ def load_url(link):
 def get_site_data(site):
     try:
         stats, products, facebook_ads = load_url(site.link)
-        if stats:
-            site.add_stats(stats)
-        else:
-            print(f"Finish {site.link} with no stats")
-
-        if products:
-            site.set_products_lean(products)
-        else:
-            print(f"Finish {site.link} with no products")
-
-        if facebook_ads:
-            site.add_ads(facebook_ads)
-        else:
-            print(f"Finish {site.link} with no facebook ads")
+        site.add_stats(stats)
+        site.set_products_lean(products)
+        site.add_ads(facebook_ads)
 
         atlas.update_site(site)
     except Exception as e:
