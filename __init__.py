@@ -2,6 +2,8 @@ import os
 import sys
 import logging
 import traceback
+from threading import Thread
+
 from Google.google_sheets import GoogleSheets
 from Database.atlas import MongoAtlas
 from Frontpages.evaluate import open_site
@@ -16,7 +18,7 @@ import multiprocessing
 import random
 from flask import Flask, request
 
-SCRAPE_WORKERS = int(os.getenv('SCRAPE_WORKERS', 1))
+SCRAPE_WORKERS = int(os.getenv('SCRAPE_WORKERS', 50))
 
 # gts = GoogleTrends(["Acupressure Relief Mat"])
 sites_sheet = GoogleSheets('Sites & products')
@@ -31,37 +33,19 @@ def log_except_hook(*exc_info):
     logging.error("Unhandled exception: %s", text)
 
 
-@app.route("/evaluate", methods=['GET', 'POST'])
-def evaluate():
-    if request.method == 'POST':
-        data = request.form.to_dict(flat=False)
-        if data:
-            atlas.evaluate_site(data['data_link'][0],
-                                eval(data['is_dropshipper'][0]),
-                                data['niche'][0],
-                                data['main_product'][0],
-                                eval(data['is_branded_products'][0]),
-                                int(data['our_ranking'][0]))
-    return open_site(atlas.get_site_to_evaluate())
-
-
-@app.route("/Start_update")
-def update_all():
-    start_update_all()
-
-
-def scrape_sites(sites):
-    with ThreadPoolExecutor(max_workers=SCRAPE_WORKERS) as executor:
+def scrape_sites(sites, processors=SCRAPE_WORKERS):
+    with ThreadPoolExecutor(max_workers=processors) as executor:
         for site in sites:
             executor.submit(get_site_data, site)
 
 
-def scrape_facebook_data(links):
-    for link in links:
-        try:
-            update_facebook_data(link)
-        except Exception as e:
-            print(f"Error to  scrape_facebook_data with {e} site {link}")
+def scrape_facebook_data(links, processors=SCRAPE_WORKERS):
+    with ThreadPoolExecutor(max_workers=processors) as executor:
+        for link in links:
+            try:
+                executor.submit(update_facebook_data, link)
+            except Exception as e:
+                print(f"Error to  scrape_facebook_data with {e} site {link}")
 
 
 def load_data(link):
@@ -95,24 +79,16 @@ def get_site_data(site):
         print(f"Error to  {site.link} with {e}")
 
 
-def start_update_all():
+def start_update_all(processors):
     sites_to_update = atlas.get_sites_to_update(sites_sheet.get_sites())
     random.shuffle(sites_to_update)
-    while len(sites_to_update) > 0:
-        scrape_sites(sites_to_update)
-    print(f"Finish all sites")
+    scrape_sites(sites_to_update, processors=processors)
 
 
-def start_update_with_no_facebook():
+def start_update_with_no_facebook(processors):
     sites_to_update = atlas.get_sites_to_update_with_no_faceook()
     random.shuffle(sites_to_update)
-    scrape_facebook_data(sites_to_update)
-
-
-def load_sites():
-    sites_to_update = atlas.get_sites_to_update(sites_sheet.get_sites())
-    random.shuffle(sites_to_update)
-    print(f"Finish all sites")
+    scrape_facebook_data(sites_to_update, processors=processors)
 
 
 def get_all_shops():
@@ -145,13 +121,45 @@ def print_loading_data():
     print("Number of cpu : ", multiprocessing.cpu_count())
 
 
+@app.route("/evaluate", methods=['GET', 'POST'])
+def evaluate():
+    if request.method == 'POST':
+        data = request.form.to_dict(flat=False)
+        if data:
+            atlas.evaluate_site(data['data_link'][0],
+                                eval(data['is_dropshipper'][0]),
+                                data['niche'][0],
+                                data['main_product'][0],
+                                eval(data['is_branded_products'][0]),
+                                int(data['our_ranking'][0]))
+    return open_site(atlas.get_site_to_evaluate())
+
+
+@app.route("/start_update")
+def update_all():
+    function = request.args.get('update')
+    processors = int(request.args.get('processors'))
+    print('Received function API at process: ' + function)
+
+    if not function:
+        return "Missing data"
+
+    # Spawn thread to process the data
+    if function == "all":
+        t = Thread(target=start_update_all, kwargs={'processors': processors})
+    elif function == "facebook":
+        t = Thread(target=start_update_with_no_facebook, kwargs={'processors': processors})
+    t.start()
+
+    # Immediately return a 200 response to the caller
+    return "Started process"
+
+
 if __name__ == '__main__':
     sys.excepthook = log_except_hook
     print_loading_data()
-    start_update_all()
-    # start_update_with_no_facebook()
-
+    app.run(debug=True)
     # test_facebook_data('bodymattersgold.com')
     # test_site_data('bodymattersgold.com')
+
     # test_facebook_ads('323363524483195')
-    # app.run(debug=True)

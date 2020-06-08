@@ -56,6 +56,9 @@ class MongoAtlas:
         client = pymongo.MongoClient(
             "mongodb+srv://Ben:30ulLucga43V4Slf@productionv2.ohsz6.gcp.mongodb.net/main?retryWrites=true&w=majority"
         )
+        "mongodb+srv://Sheinman:DWY9Sv5pbwmIeMcX@productionv2.ohsz6.gcp.mongodb.net/main?retryWrites=true&w=majority"
+
+
 
         mydb = client.prodoction
 
