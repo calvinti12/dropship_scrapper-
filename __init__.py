@@ -33,19 +33,13 @@ def log_except_hook(*exc_info):
     logging.error("Unhandled exception: %s", text)
 
 
-def scrape_sites(sites, processors=SCRAPE_WORKERS):
+def start_scrape(function, items, processors):
     with ThreadPoolExecutor(max_workers=processors) as executor:
-        for site in sites:
-            executor.submit(get_site_data, site)
-
-
-def scrape_facebook_data(links, processors=SCRAPE_WORKERS):
-    with ThreadPoolExecutor(max_workers=processors) as executor:
-        for link in links:
+        for item in items:
             try:
-                executor.submit(update_facebook_data, link)
+                executor.submit(function, item)
             except Exception as e:
-                print(f"Error to  scrape_facebook_data with {e} site {link}")
+                print(f"Error to  {function.__name__} with {e} item {item}")
 
 
 def load_data(link):
@@ -79,16 +73,10 @@ def get_site_data(site):
         print(f"Error to  {site.link} with {e}")
 
 
-def start_update_all(processors):
-    sites_to_update = atlas.get_sites_to_update(sites_sheet.get_sites())
+def start_update(function, processors):
+    sites_to_update = atlas.get_data(function, sites_sheet.get_sites())
     random.shuffle(sites_to_update)
-    scrape_sites(sites_to_update, processors=processors)
-
-
-def start_update_with_no_facebook(processors):
-    sites_to_update = atlas.get_sites_to_update_with_no_faceook()
-    random.shuffle(sites_to_update)
-    scrape_facebook_data(sites_to_update, processors=processors)
+    start_scrape(function, sites_to_update, processors)
 
 
 def get_all_shops():
@@ -144,11 +132,11 @@ def update_all():
     if not function:
         return "Missing data"
 
-    # Spawn thread to process the data
-    if function == "all":
-        t = Thread(target=start_update_all, kwargs={'processors': processors})
-    elif function == "facebook":
-        t = Thread(target=start_update_with_no_facebook, kwargs={'processors': processors})
+    data = {'processors': processors, 'function': get_site_data}
+    if function == "facebook":
+        data['function'] = update_facebook_data
+
+    t = Thread(target=start_update, kwargs=data)
     t.start()
 
     # Immediately return a 200 response to the caller

@@ -133,6 +133,12 @@ class MongoAtlas:
             print("Cant get_sites_to_update_with_no_faceook", e)
             return []
 
+    def get_data(self, function, sites_list):
+        if function.__name__ == "get_site_data":
+            return self.get_sites_to_update(sites_list)
+        elif function.__name__ == "update_facebook_data":
+            return self.get_sites_to_update_with_no_faceook()
+
     def evaluate_site(self, link, is_dropshipper, niche, main_product, is_branded_products, our_ranking):
         update_query = {"$set": {
             "is_dropshipper": is_dropshipper,
