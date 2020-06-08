@@ -54,7 +54,9 @@ class MongoAtlas:
         global sites_analysis
         global ads
         client = pymongo.MongoClient(
-            "mongodb+srv://Ben:30ulLucga43V4Slf@production.ohsz6.gcp.mongodb.net/test?retryWrites=true&w=majority")
+            "mongodb+srv://Ben:30ulLucga43V4Slf@productionv2.ohsz6.gcp.mongodb.net/main?retryWrites=true&w=majority"
+        )
+
         mydb = client.prodoction
 
         sites = mydb["sites"]
@@ -77,6 +79,33 @@ class MongoAtlas:
         sites.update_one({'link': site.link}, update_query, upsert=True)
         add_site_analysis(site)
 
+    def add_facebook_ads(self, link, facebook_ads):
+        facebook_ads['facebook'] = {
+            'active_ads': int(facebook_ads['facebook']['active_ads']),
+            'instagram_followers': int(str(facebook_ads['facebook']['instagram_followers']).replace(',', '')),
+            'likes': int(str(facebook_ads['facebook']['likes']).replace(',', '')),
+            'latest_running_ad': toDate(facebook_ads['facebook']['latest_running_ad']),
+            'link': facebook_ads['facebook']['link'],
+            'niche': facebook_ads['facebook']['niche'],
+            'page_id': facebook_ads['facebook']['page_id'],
+            'page_created': toDate(facebook_ads['facebook']['page_created']),
+            'updated': toDate(facebook_ads['facebook']['updated']),
+        }
+        update_query = {"$set": {
+            "ads.facebook": facebook_ads['facebook'],
+            "updated": datetime.datetime.now(datetime.timezone.utc)
+        }}
+
+        try:
+            print(f"link {link} update_query {update_query}")
+            result = sites.update_one({'link': link}, update_query, upsert=False)
+            print(f"Done {result.matched_count}")
+            return result
+        except Exception as e:
+            print(f"Error add_facebook_ads {link}")
+
+
+
     def get_sites_to_update(self, sites_list):
         print(f"Total sites {len(sites_list)}")
         update_date = parse(str(datetime.date.today() - datetime.timedelta(days=UPDATE_DATA_EVERY_DAYS)))
@@ -89,6 +118,17 @@ class MongoAtlas:
         except Exception as e:
             print("Cant get_sites_to_update", e)
         return sites_list
+
+    def get_sites_to_update_with_no_faceook(self):
+        try:
+            updated_sites = list(map(get_link, list(sites.find({"ads.facebook.link": {'$exists': 'true'},
+                                                               "ads.facebook.niche": ""},
+                                                              {'_id': 0, 'link': 1}))))
+            print(f"Total sites to process with no facebook {len(updated_sites)}")
+            return updated_sites
+        except Exception as e:
+            print("Cant get_sites_to_update_with_no_faceook", e)
+            return []
 
     def evaluate_site(self, link, is_dropshipper, niche, main_product, is_branded_products, our_ranking):
         update_query = {"$set": {

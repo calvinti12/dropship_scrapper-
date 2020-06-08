@@ -1,4 +1,7 @@
 import os
+import sys
+import logging
+import traceback
 from Google.google_sheets import GoogleSheets
 from Database.atlas import MongoAtlas
 from Frontpages.evaluate import open_site
@@ -21,6 +24,11 @@ atlas = MongoAtlas()
 
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
+
+def log_except_hook(*exc_info):
+    text = "".join(traceback.format_exception(*exc_info))
+    logging.error("Unhandled exception: %s", text)
 
 
 @app.route("/evaluate", methods=['GET', 'POST'])
@@ -48,7 +56,15 @@ def scrape_sites(sites):
             executor.submit(get_site_data, site)
 
 
-def load_url(link):
+def scrape_facebook_data(links):
+    for link in links:
+        try:
+            update_facebook_data(link)
+        except Exception as e:
+            print(f"Error to  scrape_facebook_data with {e} site {link}")
+
+
+def load_data(link):
     with futures.ThreadPoolExecutor(max_workers=3) as executor:
         tasks = [executor.submit(get_rank, link),
                  executor.submit(get_store_products, link),
@@ -58,9 +74,18 @@ def load_url(link):
         return tasks[0].result(), tasks[1].result(), tasks[2].result()
 
 
+def update_facebook_data(site_link):
+    try:
+        facebook_ads = get_facebook_data(site_link)
+        atlas.add_facebook_ads(site_link, facebook_ads)
+        print(f"Finish update_facebook_data site {site_link}")
+    except Exception as e:
+        print(f"Error to  {site_link} with {e}")
+
+
 def get_site_data(site):
     try:
-        stats, products, facebook_ads = load_url(site.link)
+        stats, products, facebook_ads = load_data(site.link)
         site.add_stats(stats)
         site.set_products_lean(products)
         site.add_ads(facebook_ads)
@@ -76,6 +101,12 @@ def start_update_all():
     while len(sites_to_update) > 0:
         scrape_sites(sites_to_update)
     print(f"Finish all sites")
+
+
+def start_update_with_no_facebook():
+    sites_to_update = atlas.get_sites_to_update_with_no_faceook()
+    random.shuffle(sites_to_update)
+    scrape_facebook_data(sites_to_update)
 
 
 def load_sites():
@@ -115,9 +146,10 @@ def print_loading_data():
 
 
 if __name__ == '__main__':
+    sys.excepthook = log_except_hook
     print_loading_data()
     start_update_all()
-
+    # start_update_with_no_facebook()
 
     # test_facebook_data('bodymattersgold.com')
     # test_site_data('bodymattersgold.com')

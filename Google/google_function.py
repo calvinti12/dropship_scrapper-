@@ -11,7 +11,7 @@ MYIPS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/m
 FACEBOOK_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/facebook_scrapper_"
 ADS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/ads_scrapper_"
 
-DEBUG = eval(os.getenv('DEBUG', True))
+DEBUG = eval(os.getenv('DEBUG', 'True'))
 
 
 def get_store_products(link):
