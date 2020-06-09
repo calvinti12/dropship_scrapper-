@@ -57,7 +57,7 @@ const get_ads = async (page_id) => {
     let { browser, page } = await openConnection();
     try {
         await page.goto(format_page_id(page_id), { timeout: SEC*20 })
-        await page.waitFor(NUMBER_OF_LIKES, { timeout: SEC*3 });
+        await page.waitFor(NUMBER_OF_LIKES, { timeout: SEC*10 });
         let likes_followers =await page.$$eval(NUMBER_OF_LIKES, els=> els.map(el => el.innerText));
         ads['likes'] = likes_followers[0].split('\n')[0].replace(',', '')
         ads['niche']  = likes_followers[0].split('\n')[likes_followers[0].split('\n').length-1]
@@ -71,7 +71,7 @@ const get_ads = async (page_id) => {
         ads['latest_running_ad'] = await parse_date(ad_divs[0])
         return ads;
     } catch (err) {
-        console.log("Error getting ads - " + err.message);
+        console.log("Error getting ads - " + err.message + " pageId -" + page_id);
         return ads;
     } finally {
         await closeConnection(page, browser);

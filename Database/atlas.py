@@ -100,13 +100,13 @@ class MongoAtlas:
         }}
 
         try:
-            print(f"link {link} update_query {update_query}")
             result = sites.update_one({'link': link}, update_query, upsert=False)
-            print(f"Done {result.matched_count}")
-            return result
+            if result.matched_count == 1:
+                print(f"Updated site facebook ads {link}")
+            else:
+                print(f"Cant updated site facebook ads {link}")
         except Exception as e:
             print(f"Error add_facebook_ads {link}")
-
 
 
     def get_sites_to_update(self, sites_list):

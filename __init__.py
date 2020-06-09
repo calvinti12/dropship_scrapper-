@@ -75,8 +75,7 @@ def get_site_data(site):
 
 
 def start_update(function, processors):
-    sites_to_update = atlas.get_data(function, sites_sheet.get_sites())
-    random.shuffle(sites_to_update)
+    sites_to_update = random.shuffle(atlas.get_data(function, sites_sheet.get_sites()))
     start_scrape(function, sites_to_update, processors)
 
 
