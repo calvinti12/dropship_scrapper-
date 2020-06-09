@@ -4,6 +4,7 @@ import urllib.request
 from Scrappers.Shops.shopify_scraper import analysis_site_test
 from Scrappers.Shops.my_ips_ms_scrapper import analysis_page_test
 from Scrappers.Ads.facebook_ad_library_scrapper import analysis_facebook_data_test
+from Naked.toolshed.shell import execute_js, muterun_js
 
 
 STORE_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/store_scrapper_"
@@ -63,10 +64,14 @@ def get_facebook_data(site_link):
 def get_ads_data_test(page_id):
     scrape_number = 1
     try:
-        req = urllib.request.Request(
-            ADS_SCRAPPER_LINK + str(scrape_number) + '?link={}'.format(page_id))
-        data = urllib.request.urlopen(req).read()
-        ads = json.loads(data.decode())
+        if DEBUG:
+            facebook_data = execute_js('./Scrappers/Ads/ads_scrapper.js')
+            return facebook_data
+        else:
+            req = urllib.request.Request(
+                ADS_SCRAPPER_LINK + str(scrape_number) + '?link={}'.format(page_id))
+            data = urllib.request.urlopen(req).read()
+            ads = json.loads(data.decode())
         return ads
     except Exception as e:
         print(f"Error in get_ads_data link {page_id}", e)
