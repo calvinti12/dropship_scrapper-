@@ -1,6 +1,6 @@
 runtime: python
 env: flex
-entrypoint: python __init__.py
+entrypoint: gunicorn -b :8080 __init__:app
 
 runtime_config:
   python_version: 3
@@ -21,3 +21,4 @@ env_variables:
   DEBUG: "False"
   MAX_ITEM_TO_STORE: "1000"
   SCRAPE_WORKERS: "100"
+

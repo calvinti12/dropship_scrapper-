@@ -19,6 +19,7 @@ import random
 from flask import Flask, request
 
 SCRAPE_WORKERS = int(os.getenv('SCRAPE_WORKERS', 50))
+DEBUG = eval(os.getenv('DEBUG', 'False'))
 
 # gts = GoogleTrends(["Acupressure Relief Mat"])
 sites_sheet = GoogleSheets('Sites & products')
@@ -123,7 +124,7 @@ def evaluate():
     return open_site(atlas.get_site_to_evaluate())
 
 
-@app.route("/start_update")
+@app.route("/start_update", methods=['GET', 'POST'])
 def update_all():
     function = request.args.get('update')
     processors = int(request.args.get('processors'))
@@ -144,9 +145,9 @@ def update_all():
 
 
 if __name__ == '__main__':
+    app.run(debug=DEBUG)
     sys.excepthook = log_except_hook
     print_loading_data()
-    app.run(debug=True)
     # test_facebook_data('bodymattersgold.com')
     # test_site_data('bodymattersgold.com')
 
