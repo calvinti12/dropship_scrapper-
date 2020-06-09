@@ -11,7 +11,7 @@ STORE_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/s
 MYIPS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/myips_scrapper_"
 FACEBOOK_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/facebook_scrapper_"
 ADS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/ads_scrapper_"
-
+TIMEOUT = 60
 DEBUG = eval(os.getenv('DEBUG', 'True'))
 
 
@@ -23,7 +23,7 @@ def get_store_products(link):
             return products
         else:
             req = urllib.request.Request(STORE_SCRAPPER_LINK + str(scrape_number) + '?link={}'.format(link))
-            data = urllib.request.urlopen(req).read()
+            data = urllib.request.urlopen(req, timeout=TIMEOUT).read()
             products = json.loads(data.decode())
             return products
     except Exception as e:
@@ -38,7 +38,7 @@ def get_myips_link(page):
             return ips
         else:
             req = urllib.request.Request(MYIPS_SCRAPPER_LINK + str(scrape_number) + '?link={}'.format(page))
-            data = urllib.request.urlopen(req).read()
+            data = urllib.request.urlopen(req, timeout=TIMEOUT).read()
             ips = json.loads(data.decode())
             print(f"ips {ips}")
             return ips
@@ -54,7 +54,7 @@ def get_facebook_data(site_link):
             return facebook_data
         else:
             req = urllib.request.Request(FACEBOOK_SCRAPPER_LINK + str(scrape_number) + '?link={}'.format(site_link))
-            data = urllib.request.urlopen(req).read()
+            data = urllib.request.urlopen(req, timeout=TIMEOUT).read()
             facebook_data = json.loads(data.decode())
             return facebook_data
     except Exception as e:
@@ -70,7 +70,7 @@ def get_ads_data_test(page_id):
         else:
             req = urllib.request.Request(
                 ADS_SCRAPPER_LINK + str(scrape_number) + '?link={}'.format(page_id))
-            data = urllib.request.urlopen(req).read()
+            data = urllib.request.urlopen(req, timeout=TIMEOUT).read()
             ads = json.loads(data.decode())
         return ads
     except Exception as e:

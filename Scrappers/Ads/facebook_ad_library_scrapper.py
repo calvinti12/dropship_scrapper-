@@ -7,7 +7,7 @@ from flask import jsonify
 import datetime
 
 ADS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/ads_scrapper_"
-
+TIMEOUT = 60
 headers = {
     'Accept': '*/*',
     'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8,fr;q=0.7',
@@ -105,7 +105,7 @@ def get_ads_data(page_id, site_link):
     scrape_number = 1
     try:
         req = urllib.request.Request(ADS_SCRAPPER_LINK + str(scrape_number) + '?link={}'.format(page_id))
-        data = urllib.request.urlopen(req).read()
+        data = urllib.request.urlopen(req, timeout=TIMEOUT).read()
         ads = json.loads(data.decode())
         return ads
     except Exception as e:

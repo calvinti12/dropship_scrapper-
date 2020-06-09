@@ -100,11 +100,7 @@ class MongoAtlas:
         }}
 
         try:
-            result = sites.update_one({'link': link}, update_query, upsert=False)
-            if result.matched_count == 1:
-                print(f"Updated site facebook ads {link}")
-            else:
-                print(f"Cant updated site facebook ads {link}")
+            sites.update_one({'link': link}, update_query, upsert=False)
         except Exception as e:
             print(f"Error add_facebook_ads {link}")
 

@@ -58,8 +58,11 @@ def load_data(link):
 def update_facebook_data(site_link):
     try:
         facebook_ads = get_facebook_data(site_link)
+        if 'ok' in facebook_ads['facebook'] and facebook_ads['facebook']['ok']:
+            print(f"Finish update_facebook_data site {site_link}")
+        else:
+            print(f"Cant add ads to  {site_link}")
         atlas.add_facebook_ads(site_link, facebook_ads)
-        print(f"Finish update_facebook_data site {site_link}")
     except Exception as e:
         print(f"Error to  {site_link} with {e}")
 
@@ -77,8 +80,12 @@ def get_site_data(site):
 
 
 def start_update(function, processors):
-    sites_to_update = random.shuffle(atlas.get_data(function, sites_sheet.get_sites()))
-    start_scrape(function, sites_to_update, processors)
+    sites_to_update = atlas.get_data(function, sites_sheet.get_sites())
+    random.shuffle(sites_to_update)
+    if len(sites_to_update):
+        start_scrape(function, sites_to_update, processors)
+    else:
+        print(f"No more sites to {function}")
 
 
 def get_all_shops():
