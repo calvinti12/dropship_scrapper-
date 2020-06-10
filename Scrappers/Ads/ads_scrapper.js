@@ -4,6 +4,7 @@ const NUMBER_OF_LIKES = '._8wi7';
 const PAGE_CREATED = '._3-99';
 const ACTIVE_ADS = '._7gn2';
 const LATEST_RUNNING_AD = '._7jwu';
+
 const SEE_MORE = '._5u7u';
 
 const FACEBOOK_ADS_LIBRARY = 'https://www.facebook.com/ads/library/?';
@@ -99,13 +100,15 @@ const scrape_ads = async (page, ads) => {
 const scrape_page_id = async (page, facebook_page_url) => {
     try {
         await page.goto(facebook_page_url, { timeout: SEC*20 });
-        await page.waitFor(SEE_MORE, { timeout: SEC*5 });
+        await page.waitFor(SEE_MORE, { timeout: SEC*3 });
         const hrefs = await page.$$eval('a', as =>
             as.map(a => a.href)
                 .filter(a =>(a.includes('photos')))
-                .map(a => a.replace( /(^.+\D)(\d+)(\D.+$)/i,'$2'))
-                .filter(a =>(a.length>4 && a.length<20))
+                .map(a => a.split('/photos')[0])
+                .map(a => a.split('https://www.facebook.com/')[1])
+                .filter(a => !isNaN(a))
         );
+
         let links = [...new Set(hrefs)];
         if (links.length > 1)
             console.log("Found more links then 1 - " + links + " facebook_page_url -" + facebook_page_url);
@@ -129,7 +132,7 @@ const ads_fetch_retry = async (page, ads, attempt) => {
             return await scrape_ads(page, ads);
         }
         else {
-            await sleep(2000);
+            await sleep(1000);
             return await ads_fetch_retry(page, ads, attempt - 1);
         }
     }
@@ -148,7 +151,7 @@ const page_id_fetch_retry = async (page, facebook_page_url, attempt) => {
             return null
         }
         else {
-            await sleep(2000);
+            await sleep(1000);
             return await page_id_fetch_retry(page, facebook_page_url, attempt - 1);
         }
     }
@@ -160,7 +163,7 @@ const parse_date = async (date_string) => {
 
 exports.scraping_ads = async (req, res) => {
     let facebook_page_url = req.query.link;
-    let attempts = req.query.attempts || 5;
+    let attempts = req.query.attempts || 4;
     let ads = await get_ads(facebook_page_url,attempts);
     return res.status(200).json(ads);
 };

@@ -19,6 +19,8 @@ from Google.google_function import scrape_my_ips
 from Google.google_sheets import GoogleSheets
 from Scrappers.Stats.awis_api_wrapper import get_rank
 
+global main_thread
+
 
 SCRAPE_WORKERS = int(os.getenv('SCRAPE_WORKERS', 50))
 DEBUG = eval(os.getenv('DEBUG', 'False'))
@@ -64,7 +66,7 @@ def update_facebook_data(site_link):
             print(f"Cant add ads to  {site_link}")
         atlas.add_facebook_ads(site_link, facebook_ads)
     except Exception as e:
-        print(f"Error to  {site_link} with {e}")
+        pass
 
 
 def get_site_data(site):
@@ -134,6 +136,7 @@ def evaluate():
 
 @app.route("/start_update", methods=['GET', 'POST'])
 def update_all():
+    global main_thread
     function = request.args.get('update')
     processors = int(request.args.get('processors'))
     print('Received function API at process: ' + function)
@@ -145,8 +148,8 @@ def update_all():
     if function == "facebook":
         data['function'] = update_facebook_data
 
-    t = Thread(target=start_update, kwargs=data)
-    t.start()
+    main_thread = Thread(target=start_update, kwargs=data)
+    main_thread.start()
 
     # Immediately return a 200 response to the caller
     return "Started process"
