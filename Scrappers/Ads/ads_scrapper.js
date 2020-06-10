@@ -4,6 +4,8 @@ const NUMBER_OF_LIKES = '._8wi7';
 const PAGE_CREATED = '._3-99';
 const ACTIVE_ADS = '._7gn2';
 const LATEST_RUNNING_AD = '._7jwu';
+const SEE_MORE = '._5u7u';
+
 const FACEBOOK_ADS_LIBRARY = 'https://www.facebook.com/ads/library/?';
 const headers = {
     'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8,fr;q=0.7',
@@ -16,6 +18,7 @@ const PUPPETEER_OPTIONS = {
     ignoreDefaultArgs: ['--disable-extensions']
 };
 let init_ads = {
+    'link':'',
     'page_id':'',
     'active_ads': 0,
     'latest_running_ad': '01/01/1971',
@@ -55,18 +58,22 @@ const format_page_id = (page_id) =>{
 };
 
 
-const get_ads = async (page_id,attempts_left) => {
-    init_ads['page_id'] = page_id;
+const get_ads = async (facebook_page_url,attempts_left) => {
     let { browser, page } = await openConnection();
-    init_ads =  await fetchRetry(page, init_ads, attempts_left);
+    init_ads['link'] = facebook_page_url;
+    let page_id =  await page_id_fetch_retry(page, facebook_page_url, attempts_left);
+    if(page_id) {
+        init_ads['page_id'] = page_id;
+        init_ads = await ads_fetch_retry(page, init_ads, attempts_left);
+    }
     await closeConnection(page, browser);
     return init_ads
 };
 
-const scrape = async (page, ads) => {
+const scrape_ads = async (page, ads) => {
     try {
         await page.goto(format_page_id(ads['page_id']), { timeout: SEC*20 });
-        await page.waitFor(NUMBER_OF_LIKES, { timeout: SEC*10 });
+        await page.waitFor(NUMBER_OF_LIKES, { timeout: SEC*5 });
         let likes_followers =await page.$$eval(NUMBER_OF_LIKES, els=> els.map(el => el.innerText));
         ads['likes'] = likes_followers[0].split('\n')[0].replace(',', '');
         ads['niche']  = likes_followers[0].split('\n')[likes_followers[0].split('\n').length-1];
@@ -89,21 +96,60 @@ const scrape = async (page, ads) => {
     }
 };
 
-const fetchRetry = async (page, ads, attempt) => {
+const scrape_page_id = async (page, facebook_page_url) => {
     try {
-        ads = await scrape(page, ads);
+        await page.goto(facebook_page_url, { timeout: SEC*20 });
+        await page.waitFor(SEE_MORE, { timeout: SEC*5 });
+        const hrefs = await page.$$eval('a', as =>
+            as.map(a => a.href)
+                .filter(a =>(a.includes('photos')))
+                .map(a => a.replace( /(^.+\D)(\d+)(\D.+$)/i,'$2'))
+                .filter(a =>(a.length>4 && a.length<20))
+        );
+        let links = [...new Set(hrefs)];
+        if (links.length > 1)
+            console.log("Found more links then 1 - " + links + " facebook_page_url -" + facebook_page_url);
+        return links[0];
+    } catch (err) {
+        console.log("Error getting scrape_page_id - " + err.message + " facebook_page_url -" + facebook_page_url);
+        return null
+    }
+};
+
+const ads_fetch_retry = async (page, ads, attempt) => {
+    try {
+        ads = await scrape_ads(page, ads);
         if(!ads.ok) {
-            throw new Error("Invalid response.");
+            throw new Error("ads not ok");
         }
         return ads;
     } catch (error) {
         if (attempt <= 1) {
             console.log("Error getting ads - " + error.message + " pageId -" + ads['page_id']);
-            return await scrape(page, ads);
+            return await scrape_ads(page, ads);
         }
         else {
             await sleep(2000);
-            return await fetchRetry(page, ads, attempt - 1);
+            return await ads_fetch_retry(page, ads, attempt - 1);
+        }
+    }
+};
+
+const page_id_fetch_retry = async (page, facebook_page_url, attempt) => {
+    try {
+        let page_id = await scrape_page_id(page, facebook_page_url);
+        if(!page_id) {
+            throw new Error("page_id null");
+        }
+        return page_id;
+    } catch (error) {
+        if (attempt <= 1) {
+            console.log("Error getting page_id_fetch_retry - " + error.message + " facebook_page_url -" +facebook_page_url);
+            return null
+        }
+        else {
+            await sleep(2000);
+            return await page_id_fetch_retry(page, facebook_page_url, attempt - 1);
         }
     }
 };
@@ -113,14 +159,15 @@ const parse_date = async (date_string) => {
 };
 
 exports.scraping_ads = async (req, res) => {
-    let page_id = req.query.link;
+    let facebook_page_url = req.query.link;
     let attempts = req.query.attempts || 5;
-    let ads = await get_ads(page_id,attempts);
+    let ads = await get_ads(facebook_page_url,attempts);
     return res.status(200).json(ads);
 };
 
-const test = async (page_id,attempts) => {
-    let ads = await get_ads(page_id,attempts);
+
+const test = async (facebook_page_url) => {
+    let ads = await get_ads(facebook_page_url,5);
     console.log(ads);
 };
 

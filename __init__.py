@@ -51,7 +51,7 @@ def load_data(link):
                  executor.submit(get_store_products, link),
                  executor.submit(get_facebook_data, link)]
 
-        futures.wait(tasks, timeout=30000, return_when=futures.ALL_COMPLETED)
+        futures.wait(tasks, timeout=70000, return_when=futures.ALL_COMPLETED)
         return tasks[0].result(), tasks[1].result(), tasks[2].result()
 
 

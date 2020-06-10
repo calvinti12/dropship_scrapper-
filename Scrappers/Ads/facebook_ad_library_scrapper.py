@@ -20,26 +20,12 @@ def get_ads_by_page_id(site_link):
     ads = init_ads()
     site_link = fix_url(site_link)
     site_data = extract_social_page_links(site_link)
-    page_id = extract_facebook_page_id(site_data[0])
-
-    ads['facebook']['page_id'] = page_id
-    ads['facebook']['link'] = site_data[0]
+    facebook_ads = get_ads_data(site_data[0], site_link)
+    ads['facebook'] = facebook_ads
     ads['twitter']['link'] = site_data[1]
     ads['instagram']['link'] = site_data[2]
     ads['youtube']['link'] = site_data[3]
-    if page_id:
-        facebook_ads = get_ads_data(page_id, site_link)
-        ads['facebook'] = facebook_ads
-        ads['facebook']['link'] = site_data[0]
     return ads
-
-
-def extract_facebook_page_id(facebook_page_url):
-    soup = get_soup(facebook_page_url)
-    ios_page = soup.find("meta", property="al:ios:url")
-    android_page = soup.find("meta", property="al:android:url")
-    page_id = extract_page_id(ios_page, android_page)
-    return page_id
 
 
 def extract_social_page_links(site_link):
@@ -54,13 +40,6 @@ def get_soup(link):
     req = urllib.request.Request(link, data=None, headers=headers)
     web_page = urllib.request.urlopen(req).read()
     return BeautifulSoup(web_page, "lxml")
-
-
-def extract_page_id(ios_page, android_page):
-    if ios_page:
-        return re.findall(r'\d+', ios_page["content"])[0]
-    if android_page:
-        return re.findall(r'\d+', android_page["content"])[0]
 
 
 def extract_social_links(links, site_link):
@@ -101,10 +80,10 @@ def analysis_facebook_data_test(site_link):
         print(f"Error in analysis_facebook_ads_test {e}")
 
 
-def get_ads_data(page_id, site_link):
+def get_ads_data(facebook_page_url, site_link):
     scrape_number = 1
     try:
-        req = urllib.request.Request(ADS_SCRAPPER_LINK + str(scrape_number) + '?link={}'.format(page_id))
+        req = urllib.request.Request(ADS_SCRAPPER_LINK + str(scrape_number) + '?link={}'.format(facebook_page_url))
         data = urllib.request.urlopen(req, timeout=TIMEOUT).read()
         ads = json.loads(data.decode())
         return ads
