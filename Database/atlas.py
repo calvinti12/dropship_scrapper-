@@ -48,6 +48,38 @@ def add_site_analysis(site):
     sites_analysis.update_one({'link': site.link}, update_query, upsert=True)
 
 
+def evaluate_site(link, is_dropshipper, main_product, is_branded_products, our_ranking):
+    update_query = {"$set": {
+        "is_dropshipper": is_dropshipper,
+        "main_product": main_product,
+        "is_branded_products": is_branded_products,
+        "our_ranking": our_ranking
+    }}
+    print(f"save site evaluate {link} is_dropshipper {is_dropshipper} is_branded_products {is_branded_products} our_ranking {our_ranking}")
+    sites.update_one({'link': link}, update_query, upsert=False)
+
+
+def get_site_to_evaluate():
+    update_date = parse(str(datetime.date.today() - datetime.timedelta(days=30)))
+
+    try:
+        site = sites.find_one({"is_dropshipper": {'$exists': False},
+                               "number_of_product": {'$gte': 1, '$lte': 15},
+                               "last_product_updated": {'$gte': update_date},
+                               "ads.facebook.active_ads": {'$gte': 1}
+                               },
+                              {'_id': 0,
+                               'link': 1,
+                               'number_of_product': 1,
+                               'first_product_published': 1,
+                               'last_product_updated': 1,
+                               'ads.facebook.niche': 1,
+                               'ads.facebook.active_ads': 1})
+        return site
+    except Exception as e:
+        print("Cant get_site_to_evaluate", e)
+
+
 class MongoAtlas:
     def __init__(self):
         global sites
@@ -132,28 +164,4 @@ class MongoAtlas:
             return self.get_sites_to_update(sites_list)
         elif function.__name__ == "update_facebook_data":
             return self.get_sites_to_update_with_no_faceook()
-
-    def evaluate_site(self, link, is_dropshipper, niche, main_product, is_branded_products, our_ranking):
-        update_query = {"$set": {
-            "is_dropshipper": is_dropshipper,
-            "niche": niche,
-            "main_product": main_product,
-            "is_branded_products": is_branded_products,
-            "our_ranking": our_ranking
-        }}
-        print(f"save site evaluate {link} is_dropshipper {is_dropshipper} niche {niche} is_branded_products {is_branded_products} our_ranking {our_ranking}")
-        sites.update_one({'link': link}, update_query, upsert=False)
-
-    def get_site_to_evaluate(self):
-        update_date = parse(str(datetime.date.today() - datetime.timedelta(days=30)))
-
-        try:
-            site = sites.find_one({"is_dropshipper": {'$exists': False},
-                                   "number_of_product": {'$gte': 1, '$lte': 10},
-                                   "last_product_updated": {'$gte': update_date}
-                                   },
-                                  {'_id': 0, 'link': 1, 'number_of_product': 1, 'last_product_updated': 1, 'first_product_published': 1})
-            return site
-        except Exception as e:
-            print("Cant get_site_to_evaluate", e)
 

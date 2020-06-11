@@ -10,7 +10,7 @@ from threading import Thread
 
 from flask import Flask, request
 
-from Database.atlas import MongoAtlas
+from Database.atlas import MongoAtlas, evaluate_site, get_site_to_evaluate
 from Frontpages.evaluate import open_site
 from Google.google_function import get_ads_data_test
 from Google.google_function import get_facebook_data
@@ -125,13 +125,12 @@ def evaluate():
     if request.method == 'POST':
         data = request.form.to_dict(flat=False)
         if data:
-            atlas.evaluate_site(data['data_link'][0],
+            evaluate_site(data['data_link'][0],
                                 eval(data['is_dropshipper'][0]),
-                                data['niche'][0],
                                 data['main_product'][0],
                                 eval(data['is_branded_products'][0]),
                                 int(data['our_ranking'][0]))
-    return open_site(atlas.get_site_to_evaluate())
+    return open_site(get_site_to_evaluate())
 
 
 @app.route("/start_update", methods=['GET', 'POST'])

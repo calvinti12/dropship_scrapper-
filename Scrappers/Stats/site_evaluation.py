@@ -32,5 +32,5 @@ class SiteEvaluation:
         elm = driver.find_element_by_id("shopify-section-header")
         driver.execute_script("arguments[0].innerHTML =" + HTML_TEXT, elm)
 
-    def save_evaluation(self,link, is_dropshipper, niche, main_product, is_branded_products):
+    def save_evaluation(self, link, is_dropshipper, niche, main_product, is_branded_products):
         evaluate_site(link, is_dropshipper, niche, main_product, is_branded_products)

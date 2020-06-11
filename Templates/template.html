@@ -27,14 +27,8 @@
           <p>Number of products: {{number_of_products}}</p>
           <p>Last updated: {{last_product_updated}}</p>
           <p>First updated: {{first_product_published}}</p>
-          <p>
-            <label for="niche-select">Niche: </label>
-            <select name="niche" id="niche-select">
-            {% for o in niche_list %}
-                <option value="{{ o }}">{{ o }}</option>
-            {% endfor %}
-            </select>
-          </p>
+          <p>Niche: {{niche}}</p>
+          <p>Active ads: {{active_ads}}</p>
           <p>
             <label for="main_product-text">Main product: </label>
             <input type = "text" name = "main_product" id = "main_product-text" placeholder="Enter main product" />

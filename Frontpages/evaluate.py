@@ -28,7 +28,7 @@ def open_site(site):
     if driver is None:
         options = webdriver.ChromeOptions()
         # options.add_argument("headless")
-        driver = webdriver.Chrome(executable_path=r"chromedriver.exe", chrome_options=options)
+        driver = webdriver.Chrome(executable_path=r"Scrappers/chromedriver.exe", chrome_options=options)
 
     link = fix_url(site['link'])
     driver.get(link)
@@ -36,8 +36,9 @@ def open_site(site):
                            link=link,
                            data_link=site['link'],
                            number_of_products=str(site['number_of_product']),
-                           last_product_updated=str(site['last_product_updated']).replace(' 00:00:00', '')[::-1],
-                           first_product_published=str(site['first_product_published']).replace(' 00:00:00', '')[::-1],
-                           niche_list=niche_list)
+                           last_product_updated=str(site['last_product_updated']).replace(' 00:00:00', ''),
+                           first_product_published=str(site['first_product_published']).replace(' 00:00:00', ''),
+                           niche=site['ads']['facebook']['niche'],
+                           active_ads=site['ads']['facebook']['active_ads'])
 
 
