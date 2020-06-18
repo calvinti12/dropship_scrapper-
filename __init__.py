@@ -21,7 +21,6 @@ from Scrappers.Stats.awis_api_wrapper import get_rank
 
 global main_thread
 
-
 SCRAPE_WORKERS = int(os.getenv('SCRAPE_WORKERS', 50))
 DEBUG = eval(os.getenv('DEBUG', 'False'))
 
@@ -89,11 +88,6 @@ def start_update(function, processors):
     else:
         print(f"No more sites to {function}")
 
-
-def get_all_shops():
-    scrape_my_ips(number_of_pages=3)
-
-
 def test_facebook_data(site_link):
     facebook_data = get_facebook_data(site_link)
     if facebook_data:
@@ -126,10 +120,10 @@ def evaluate():
         data = request.form.to_dict(flat=False)
         if data:
             evaluate_site(data['data_link'][0],
-                                eval(data['is_dropshipper'][0]),
-                                data['main_product'][0],
-                                eval(data['is_branded_products'][0]),
-                                int(data['our_ranking'][0]))
+                          eval(data['is_dropshipper'][0]),
+                          data['main_product'][0],
+                          eval(data['is_branded_products'][0]),
+                          int(data['our_ranking'][0]))
     return open_site(get_site_to_evaluate())
 
 
@@ -152,6 +146,14 @@ def update_all():
 
     # Immediately return a 200 response to the caller
     return "Started process"
+
+
+@app.route("/get_shops", methods=['GET', 'POST'])
+def get_all_shops():
+    global main_thread
+    main_thread = Thread(target=scrape_my_ips, kwargs={'number_of_pages': 5})
+    main_thread.start()
+    return "Started get_shops"
 
 
 if __name__ == '__main__':

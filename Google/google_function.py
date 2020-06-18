@@ -37,7 +37,7 @@ def get_myips_link(page):
             ips = analysis_page_test(page)
             return ips
         else:
-            req = urllib.request.Request(MYIPS_SCRAPPER_LINK + str(scrape_number) + '?link={}'.format(page))
+            req = urllib.request.Request(MYIPS_SCRAPPER_LINK + str(scrape_number) + '?page={}'.format(page))
             data = urllib.request.urlopen(req, timeout=TIMEOUT).read()
             ips = json.loads(data.decode())
             print(f"ips {ips}")

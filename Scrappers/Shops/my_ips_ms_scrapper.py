@@ -35,8 +35,6 @@ def scraper(page):
     time.sleep(5)
     url = f"https://myip.ms/ajax_table/sites/{page}/own/376714/sort/6"
 
-    headers['User-Agent'] = UserAgent().random
-
     response = requests.request("POST", url, headers=headers, data=payload, files=[])
 
     page_resp = html.fromstring(response.text.encode('utf8'))
