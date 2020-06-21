@@ -2,7 +2,6 @@ import json
 import os
 import urllib.request
 from Scrappers.Shops.shopify_scraper import analysis_site_test
-from Scrappers.Shops.my_ips_ms_scrapper import analysis_page_test
 from Scrappers.Ads.facebook_ad_library_scrapper import analysis_facebook_data_test
 from Naked.toolshed.shell import execute_js, muterun_js
 
@@ -30,20 +29,20 @@ def get_store_products(link):
         print(f"Error in get_store_products link {link}", e)
 
 
-def get_myips_link(page):
+def get_myips_link(start_page, number_of_pages, attempts):
     scrape_number = 1
     try:
         if DEBUG:
-            ips = analysis_page_test(page)
+            ips = execute_js('./Scrappers/Shops/shops_ip_scrapper.js')
             return ips
         else:
-            req = urllib.request.Request(MYIPS_SCRAPPER_LINK + str(scrape_number) + '?page={}'.format(page))
+            req = urllib.request.Request(MYIPS_SCRAPPER_LINK + str(scrape_number) + f'?start_page={start_page}&number_of_pages={number_of_pages}&attempts={attempts}')
             data = urllib.request.urlopen(req, timeout=TIMEOUT).read()
             ips = json.loads(data.decode())
             print(f"ips {ips}")
             return ips
     except Exception as e:
-        print(f"Error in get_myips_link link {page}", e)
+        print(f"Error in get_myips_link link {start_page}", e)
 
 
 def get_facebook_data(site_link):
