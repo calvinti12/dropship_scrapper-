@@ -13,7 +13,7 @@ def get_value(col, row):
 
 
 def get_site(row_number):
-    return Site(row_number=row_number, ranking=get_value(1, row_number),
+    return Site(ranking=get_value(1, row_number),
                 link=get_value(2, row_number),
                 daily_visitors=get_value(3, row_number),
                 monthly_visitors=get_value(4, row_number))

@@ -30,17 +30,8 @@ def get_store_products(link):
 
 
 def get_myips_link(start_page, number_of_pages, attempts):
-    scrape_number = 1
     try:
-        if DEBUG:
-            ips = execute_js('./Scrappers/Shops/shops_ip_scrapper.js')
-            return ips
-        else:
-            req = urllib.request.Request(MYIPS_SCRAPPER_LINK + str(scrape_number) + f'?start_page={start_page}&number_of_pages={number_of_pages}&attempts={attempts}')
-            data = urllib.request.urlopen(req, timeout=TIMEOUT).read()
-            ips = json.loads(data.decode())
-            print(f"ips {ips}")
-            return ips
+        urllib.request.Request(MYIPS_SCRAPPER_LINK + f'?start_page={start_page}&number_of_pages={number_of_pages}&attempts={attempts}')
     except Exception as e:
         print(f"Error in get_myips_link link {start_page}", e)
 

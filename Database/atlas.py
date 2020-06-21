@@ -58,7 +58,6 @@ def evaluate_site(link, is_dropshipper, main_product, is_branded_products, our_r
     print(f"save site evaluate {link} is_dropshipper {is_dropshipper} is_branded_products {is_branded_products} our_ranking {our_ranking}")
     sites.update_one({'link': link}, update_query, upsert=False)
 
-
 def get_site_to_evaluate():
     update_date = parse(str(datetime.date.today() - datetime.timedelta(days=30)))
 
@@ -78,6 +77,21 @@ def get_site_to_evaluate():
         return site
     except Exception as e:
         print("Cant get_site_to_evaluate", e)
+
+
+def add_site(site):
+    update_query = {"$setOnInsert": {
+        "ranking": site.ranking,
+        "link": site.link,
+        "daily_visitors": int(site.daily_visitors),
+        "updated": datetime.datetime.now(datetime.timezone.utc),
+        "created": datetime.datetime.now(datetime.timezone.utc)
+    }}
+    added_site = sites.update_one({'link': site.link}, update_query, upsert=True)
+    if added_site.matched_count == 0:
+        print(f"New site added updated sites {site.link}")
+    else:
+        print(f"Site already existed {site.link}")
 
 
 class MongoAtlas:

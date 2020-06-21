@@ -36,8 +36,7 @@ def toDate(date_string):
 
 
 class Site:
-    def __init__(self, row_number, ranking, link, daily_visitors, monthly_visitors):
-        self.row_number = row_number
+    def __init__(self, ranking, link, daily_visitors, monthly_visitors):
         self.ranking = extract_number(str(ranking.replace(',', '')))
         self.link = link
         self.daily_visitors = int(str(daily_visitors).replace(',', ''))

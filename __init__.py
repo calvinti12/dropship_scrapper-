@@ -10,9 +10,10 @@ from threading import Thread
 
 from flask import Flask, request
 
-from Database.atlas import MongoAtlas, evaluate_site, get_site_to_evaluate
+from Class.site import Site
+from Database.atlas import MongoAtlas, evaluate_site, get_site_to_evaluate, add_site
 from Frontpages.evaluate import open_site
-from Google.google_function import get_ads_data_test
+from Google.google_function import get_ads_data_test, get_myips_link
 from Google.google_function import get_facebook_data
 from Google.google_function import get_store_products
 from Google.google_function import scrape_my_ips
@@ -88,6 +89,7 @@ def start_update(function, processors):
     else:
         print(f"No more sites to {function}")
 
+
 def test_facebook_data(site_link):
     facebook_data = get_facebook_data(site_link)
     if facebook_data:
@@ -148,12 +150,39 @@ def update_all():
     return "Started process"
 
 
-@app.route("/get_shops", methods=['GET', 'POST'])
-def get_all_shops():
+@app.route("/start_msips_scrapper", methods=['GET'])
+def start_msips_scrapper():
     global main_thread
-    main_thread = Thread(target=scrape_my_ips, kwargs={'number_of_pages': 5})
+    start_page = request.args.get('start_page')
+    number_of_pages = int(request.args.get('number_of_pages'))
+    attempts = int(request.args.get('attempts'))
+    print('Received function API at process: start_msips_scrapper')
+
+    data = {'start_page': start_page,
+            'number_of_pages': number_of_pages,
+            'attempts': attempts}
+
+    main_thread = Thread(target=get_myips_link, kwargs=data)
     main_thread.start()
-    return "Started get_shops"
+
+    # Immediately return a 200 response to the caller
+    return "Started start_msips_scrapper process"
+
+
+@app.route("/save_ips", methods=['POST'])
+def save_ips():
+    sites = request.json
+    with ThreadPoolExecutor(max_workers=50) as executor:
+        for site_data in sites:
+            try:
+                site = Site(ranking=site_data['ranking'],
+                            link=site_data['link'],
+                            daily_visitors=site_data['daily_visitors'],
+                            monthly_visitors=site_data['monthly_visitors'])
+                executor.submit(add_site, site)
+            except Exception as e:
+                print(f"Error to save_ips with {e} site_link {site_data['link']}")
+    return "Saved save_ips"
 
 
 if __name__ == '__main__':
