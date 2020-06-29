@@ -20,9 +20,9 @@ def get_interest_over_time(kw_list):
     gts = gts.drop(labels=['isPartial'], axis='columns')
     gts = gts.loc[gts.index < pd.to_datetime('2020-05-05')]
     s = validate_series(gts)
-    persist_ad = PersistAD(c=3.0, side='positive')
+    persist_ad = PersistAD(c=2.0, side='positive')
     anomalies = persist_ad.fit_detect(s)
-    plot(s, anomaly=anomalies, ts_linewidth=1, ts_markersize=3, anomaly_color='red')
+    plot(s, anomaly=anomalies, ts_linewidth=1, ts_markersize=5, anomaly_color='red')
 
     # level_shift_ad = LevelShiftAD(c=6.0, side='both', window=5)
     # data = gts.plot(figsize=(11, 8), title="Interest Over Time")
