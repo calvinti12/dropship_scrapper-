@@ -200,7 +200,7 @@ if __name__ == '__main__':
     # app.run(debug=DEBUG)
     # sys.excepthook = log_except_hook
     # print_loading_data()
-    get_interest_over_time(['wooden spoon'])
+    get_interest_over_time(['light saber'])
     # test_facebook_data('bodymattersgold.com')
     # test_site_data('bodymattersgold.com')
 
