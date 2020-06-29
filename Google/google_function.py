@@ -7,7 +7,7 @@ from Naked.toolshed.shell import execute_js, muterun_js
 
 
 STORE_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/store_scrapper_"
-MYIPS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/myips_scrapper_"
+MYIPS_SCRAPPER_LINK = "https://node-scrapper-ufmnftzakq-uk.a.run.app/scrape_ips"
 FACEBOOK_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/facebook_scrapper_"
 ADS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/ads_scrapper_"
 TIMEOUT = 60
@@ -31,7 +31,9 @@ def get_store_products(link):
 
 def get_myips_link(start_page, number_of_pages, attempts):
     try:
-        urllib.request.Request(MYIPS_SCRAPPER_LINK + f'?start_page={start_page}&number_of_pages={number_of_pages}&attempts={attempts}')
+        req = urllib.request.Request(MYIPS_SCRAPPER_LINK + f'?start_page={start_page}&number_of_pages={number_of_pages}&attempts={attempts}')
+        data = urllib.request.urlopen(req, timeout=TIMEOUT).read()
+        print(f"Start get_myips_link {start_page}", data)
     except Exception as e:
         print(f"Error in get_myips_link link {start_page}", e)
 

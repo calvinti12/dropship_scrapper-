@@ -8,7 +8,7 @@ from concurrent import futures
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 
-from flask import Flask, request
+from flask import Flask, request, jsonify , render_template
 
 from Class.site import Site
 from Database.atlas import MongoAtlas, evaluate_site, get_site_to_evaluate, add_site
@@ -18,6 +18,7 @@ from Google.google_function import get_facebook_data
 from Google.google_function import get_store_products
 from Google.google_function import scrape_my_ips
 from Google.google_sheets import GoogleSheets
+from Google.google_trends_api import get_interest_over_time
 from Scrappers.Stats.awis_api_wrapper import get_rank
 
 global main_thread
@@ -25,7 +26,6 @@ global main_thread
 SCRAPE_WORKERS = int(os.getenv('SCRAPE_WORKERS', 50))
 DEBUG = eval(os.getenv('DEBUG', 'False'))
 
-# gts = GoogleTrends(["Acupressure Relief Mat"])
 sites_sheet = GoogleSheets('Sites & products')
 atlas = MongoAtlas()
 
@@ -169,6 +169,15 @@ def start_msips_scrapper():
     return "Started start_msips_scrapper process"
 
 
+@app.route("/get_key_word_trend", methods=['GET'])
+def get_key_word_trend():
+    global main_thread
+    data = request.form.to_dict(flat=False)
+    main_thread = Thread(target=get_interest_over_time, kwargs={'kw_list': data})
+    main_thread.start()
+    return "try to print"
+
+
 @app.route("/save_ips", methods=['POST'])
 def save_ips():
     sites = request.json
@@ -185,11 +194,15 @@ def save_ips():
     return "Saved save_ips"
 
 
+
+
 if __name__ == '__main__':
-    app.run(debug=DEBUG)
-    sys.excepthook = log_except_hook
-    print_loading_data()
+    # app.run(debug=DEBUG)
+    # sys.excepthook = log_except_hook
+    # print_loading_data()
+    get_interest_over_time(['wooden spoon'])
     # test_facebook_data('bodymattersgold.com')
     # test_site_data('bodymattersgold.com')
+
 
     # test_facebook_ads('323363524483195')
