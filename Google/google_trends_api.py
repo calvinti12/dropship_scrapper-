@@ -1,46 +1,45 @@
-import pytrends
+# https://pypi.org/project/pytrends/#interest-by-region
 from pytrends.request import TrendReq
 import pandas as pd
 import matplotlib.pyplot as plt
 from adtk.visualization import plot
-from adtk.detector import LevelShiftAD
 from adtk.data import validate_series
 from adtk.detector import PersistAD
-from datetime import date, timedelta
-import time
 import seaborn as sns
-# pytrends = TrendReq(hl='en-US', tz=360, timeout=(10,25), proxies=['https://34.203.233.13:80',], retries=2, backoff_factor=0.1)
 
 
 def get_interest_over_time(kw_list):
-    pytrend = TrendReq(hl='en-US', tz=360)
-    pytrend.build_payload(kw_list, cat=0, timeframe='today 3-m', geo='', gprop='')
-    sns.set(color_codes=True)
-    gts = pytrend.interest_over_time()
-    gts = gts.drop(labels=['isPartial'], axis='columns')
-    gts = gts.loc[gts.index < pd.to_datetime('2020-05-05')]
-    s = validate_series(gts)
-    persist_ad = PersistAD(c=2.0, side='positive')
-    anomalies = persist_ad.fit_detect(s)
-    plot(s, anomaly=anomalies, ts_linewidth=1, ts_markersize=5, anomaly_color='red')
-
-    # level_shift_ad = LevelShiftAD(c=6.0, side='both', window=5)
-    # data = gts.plot(figsize=(11, 8), title="Interest Over Time")
-    # data.set_xlabel('Date')
-    # data.set_ylabel('Trends Index')
-    # data.tick_params(axis='both', which='major', labelsize=12)
-    # anomalies = level_shift_ad.fit_detect(data)
+    py_trend = TrendReq(hl='en-US', retries=2)
+    get_all_trends(py_trend, kw_list)
     plt.show()
 
-    # Immediately return a 200 response to the caller
-    # # df_rm = pd.concat([diet.rolling(12).mean(), gym.rolling(12).mean()], axis=1)
-    # dx = gts.mean().plot.line(figsize=(9, 6), title="Interest Over Time")
-    # dx.set_xlabel('Date')
-    # dx.set_ylabel('Trends Index')
-    # dx.tick_params(axis='both', which='major', labelsize=12)
+
+def get_trends(py_trend, kw_list, time_frame, geo='', window=2):
+    py_trend.build_payload(kw_list, cat=0, timeframe=time_frame, geo=geo, gprop='')
+    sns.set(color_codes=True)
+    gts = py_trend.interest_over_time()
+    gts = gts.drop(labels=['isPartial'], axis='columns')
+    s = validate_series(gts)
+    persist_ad = PersistAD(c=2.0, side='positive')
+
+    # Number of dates data points to check
+    persist_ad.window = window
+    anomalies = persist_ad.fit_detect(s)
+    plot(s, anomaly=anomalies, ts_linewidth=1, ts_markersize=5, anomaly_color='red')
+    plt.title(geo + time_frame.replace('today', '').replace('now', ''))
 
 
+def get_all_trends(py_trend, kw_list):
+    # get_geo_trend(py_trend, kw_list, 'US')
+    # get_geo_trend(py_trend, kw_list, 'CA')
+    # get_geo_trend(py_trend, kw_list, 'GB')
+    # get_geo_trend(py_trend, kw_list, 'AU')
 
+    get_geo_trend(py_trend, kw_list, geo='')
+
+
+def get_geo_trend(py_trend, kw_list, geo=''):
+    get_trends(py_trend, kw_list, 'today 3-m', geo, 2), get_trends(py_trend, kw_list, 'now 7-d', geo, 8)
 
 
 def get_historical_interest(kw_list, year_start, month_start, day_start, hour_start, year_end, month_end, day_end, hour_end, sleep):
