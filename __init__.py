@@ -169,13 +169,23 @@ def start_msips_scrapper():
     return "Started start_msips_scrapper process"
 
 
-@app.route("/get_key_word_trend", methods=['GET'])
+@app.route("/get_key_word_trend", methods=['POST'])
 def get_key_word_trend():
-    global main_thread
-    data = request.form.to_dict(flat=False)
-    main_thread = Thread(target=get_interest_over_time, kwargs={'kw_list': data})
-    main_thread.start()
-    return "try to print"
+    # key_words = request.form.key_words
+    # hours_in_trend = request.form.hours_in_trend
+    # max_workers = request.form.max_workers
+    key_words = ['World Cup', 'Fortnite']
+    hours_in_trend = 4
+    max_workers = 4
+    tasks = []
+    with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        for key_word in key_words:
+            try:
+                tasks.append(executor.submit(lambda p: get_interest_over_time(*p), [[key_word], hours_in_trend]))
+            except Exception as e:
+                print(f"Error to get_key_word_trend {e}")
+    futures.wait(tasks, timeout=70000, return_when=futures.ALL_COMPLETED)
+    return 'Done'
 
 
 @app.route("/save_ips", methods=['POST'])
@@ -194,13 +204,11 @@ def save_ips():
     return "Saved save_ips"
 
 
-
-
 if __name__ == '__main__':
-    # app.run(debug=DEBUG)
-    # sys.excepthook = log_except_hook
-    # print_loading_data()
-    get_interest_over_time(['light saber'])
+    app.run(debug=DEBUG)
+    sys.excepthook = log_except_hook
+    print_loading_data()
+    # get_interest_over_time(['World Cup'], 160)
     # test_facebook_data('bodymattersgold.com')
     # test_site_data('bodymattersgold.com')
 
