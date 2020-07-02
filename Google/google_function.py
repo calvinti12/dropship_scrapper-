@@ -1,6 +1,11 @@
 import json
 import os
 import urllib.request
+from urllib.parse import urlencode
+from concurrent import futures
+from concurrent.futures import ThreadPoolExecutor
+
+from Google.google_trends_api import get_interest_over_time
 from Scrappers.Shops.shopify_scraper import analysis_site_test
 from Scrappers.Ads.facebook_ad_library_scrapper import analysis_facebook_data_test
 from Naked.toolshed.shell import execute_js, muterun_js
@@ -10,6 +15,8 @@ STORE_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/s
 MYIPS_SCRAPPER_LINK = "https://node-scrapper-ufmnftzakq-uk.a.run.app/scrape_ips"
 FACEBOOK_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/facebook_scrapper_"
 ADS_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/ads_scrapper_"
+GOOGLE_TREND_LINK = "https://us-east4-dropshipscrapper.cloudfunctions.net/google_trends_api_"
+
 TIMEOUT = 60
 DEBUG = eval(os.getenv('DEBUG', 'True'))
 
@@ -67,6 +74,32 @@ def get_ads_data_test(page_id):
         return ads
     except Exception as e:
         print(f"Error in get_ads_data link {page_id}", e)
+
+
+def get_trend(key_words, hours_in_trend, max_workers):
+    scrape_number = 1
+    try:
+        if DEBUG:
+            tasks = []
+            with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+                for key_word in key_words:
+                    tasks.append(executor.submit(lambda p: get_interest_over_time(*p), [[key_word], hours_in_trend]))
+            futures.wait(tasks, timeout=70000, return_when=futures.ALL_COMPLETED)
+            map_iterator = list(map(lambda a: a.result(), tasks))
+
+            # get_interest_over_time_debug(['Terry Crews'], hours_in_trend)
+
+            return map_iterator
+        else:
+            post_fields = {'key_words': key_words,
+                           'hours_in_trend': hours_in_trend,
+                           'max_workers': max_workers}
+            request = urllib.request.Request(GOOGLE_TREND_LINK + str(scrape_number), urlencode(post_fields).encode())
+            data = urllib.request.urlopen(request).read().decode()
+            trends = json.loads(data)
+            return trends
+    except Exception as e:
+        print(f"Error in get_trend link {key_words}", e)
 
 
 def scrape_my_ips(number_of_pages):

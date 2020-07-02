@@ -8,17 +8,17 @@ from concurrent import futures
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 
-from flask import Flask, request, jsonify , render_template
+from flask import Flask, request, jsonify, render_template
 
 from Class.site import Site
 from Database.atlas import MongoAtlas, evaluate_site, get_site_to_evaluate, add_site
 from Frontpages.evaluate import open_site
-from Google.google_function import get_ads_data_test, get_myips_link
+from Google.google_function import get_ads_data_test, get_myips_link, get_trend
 from Google.google_function import get_facebook_data
 from Google.google_function import get_store_products
 from Google.google_function import scrape_my_ips
 from Google.google_sheets import GoogleSheets
-from Google.google_trends_api import get_interest_over_time
+from Google.google_trends_api import get_interest_over_time, get_interest_over_time_debug
 from Scrappers.Stats.awis_api_wrapper import get_rank
 
 global main_thread
@@ -55,6 +55,15 @@ def load_data(link):
 
         futures.wait(tasks, timeout=70000, return_when=futures.ALL_COMPLETED)
         return tasks[0].result(), tasks[1].result(), tasks[2].result()
+
+
+def key_words_test(key_word, hours_in_trend, max_workers):
+    tasks = []
+    with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        for i in range(0, max_workers):
+            tasks.append(executor.submit(lambda p: get_trend(*p), [[key_word], hours_in_trend, 50]))
+    futures.wait(tasks, timeout=70000, return_when=futures.ALL_COMPLETED)
+    return list(map(lambda a: a.result(), tasks))
 
 
 def update_facebook_data(site_link):
@@ -171,21 +180,11 @@ def start_msips_scrapper():
 
 @app.route("/get_key_word_trend", methods=['POST'])
 def get_key_word_trend():
-    # key_words = request.form.key_words
-    # hours_in_trend = request.form.hours_in_trend
-    # max_workers = request.form.max_workers
-    key_words = ['World Cup', 'Fortnite']
-    hours_in_trend = 4
-    max_workers = 4
-    tasks = []
-    with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        for key_word in key_words:
-            try:
-                tasks.append(executor.submit(lambda p: get_interest_over_time(*p), [[key_word], hours_in_trend]))
-            except Exception as e:
-                print(f"Error to get_key_word_trend {e}")
-    futures.wait(tasks, timeout=70000, return_when=futures.ALL_COMPLETED)
-    return 'Done'
+    key_words = request.form.getlist('key_words')
+    hours_in_trend = int(request.form.get('hours_in_trend'))
+    max_workers = int(request.form.get('max_workers'))
+
+    return jsonify(get_trend(key_words, hours_in_trend, max_workers))
 
 
 @app.route("/save_ips", methods=['POST'])
@@ -205,12 +204,14 @@ def save_ips():
 
 
 if __name__ == '__main__':
-    app.run(debug=DEBUG)
-    sys.excepthook = log_except_hook
-    print_loading_data()
+    # app.run(debug=DEBUG)
+    # sys.excepthook = log_except_hook
+    # print_loading_data()
+
+    data = key_words_test('World Cup', 8, 20)
+    print(data)
     # get_interest_over_time(['World Cup'], 160)
     # test_facebook_data('bodymattersgold.com')
     # test_site_data('bodymattersgold.com')
-
 
     # test_facebook_ads('323363524483195')
