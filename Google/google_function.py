@@ -76,24 +76,15 @@ def get_ads_data_test(page_id):
         print(f"Error in get_ads_data link {page_id}", e)
 
 
-def get_trend(key_words, hours_in_trend, max_workers):
+def get_trend(key_words, hours_in_trend):
     scrape_number = 1
     try:
         if DEBUG:
-            tasks = []
-            with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-                for key_word in key_words:
-                    tasks.append(executor.submit(lambda p: get_interest_over_time(*p), [[key_word], hours_in_trend]))
-            futures.wait(tasks, timeout=70000, return_when=futures.ALL_COMPLETED)
-            map_iterator = list(map(lambda a: a.result(), tasks))
-
-            # get_interest_over_time_debug(['Terry Crews'], hours_in_trend)
-
-            return map_iterator
+            trends = get_interest_over_time(key_words, hours_in_trend)
+            return trends
         else:
             post_fields = {'key_words': key_words,
-                           'hours_in_trend': hours_in_trend,
-                           'max_workers': max_workers}
+                           'hours_in_trend': hours_in_trend}
             request = urllib.request.Request(GOOGLE_TREND_LINK + str(scrape_number), urlencode(post_fields).encode())
             data = urllib.request.urlopen(request).read().decode()
             trends = json.loads(data)
