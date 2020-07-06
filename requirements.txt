@@ -7,7 +7,7 @@ fake-useragent==0.1.11
 gspread==3.6.0
 lxml==4.5.0
 python-dateutil==2.8.1
-pytrends==4.7.2
+pytrends==4.7.3
 requests==2.23.0
 selenium==3.141.0
 asyncio~=3.4.3

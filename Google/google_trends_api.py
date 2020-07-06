@@ -68,7 +68,7 @@ def get_interest_over_time(kw_list, hours_in_trend, debug=False):
 
 def is_trend(kw_list, time_frame, geo='', window=2, hours_in_trend=36, debug=False):
     try:
-        py_trend = TrendReq(hl='en-US', proxies=proxies[geo], retries=5, timeout=None)
+        py_trend = TrendReq(hl='en-US', proxies=proxies[geo], retries=5, timeout=None, backoff_factor=0.3,)
         py_trend.build_payload(kw_list, cat=0, timeframe=time_frame, geo=geo, gprop='')
         gts = py_trend.interest_over_time()
         gts = gts.drop(labels=['isPartial'], axis='columns', errors='ignore')
@@ -112,8 +112,6 @@ def search_trend_by_keyword(key_words, hours_in_trend, debug=False):
         found_trend = list(filter(lambda x: x['is_trend'], trends))
         if len(found_trend) > 0:
             print(f"key_word {key_word} is trending in {found_trend}")
-        else:
-            print(f"No trends for {key_word}")
 
     # return jsonify(data)
 
