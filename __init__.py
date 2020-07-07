@@ -19,8 +19,8 @@ from Google.google_function import get_facebook_data
 from Google.google_function import get_store_products
 from Google.google_function import scrape_my_ips
 from Google.google_sheets import GoogleSheets
-from Google.google_trends_api import search_trend_by_keyword
-from ScaleTest.requests_scale_test import run_test
+# from ScaleTest.requests_scale_test import run_test
+from Google.google_trends_api import GoogleTrendsApi
 from Scrappers.Stats.awis_api_wrapper import get_rank
 
 global main_thread
@@ -2289,7 +2289,7 @@ def key_words_test(key_words, hours_in_trend, max_workers):
     tasks = []
     with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         for key_word in key_words:
-            tasks.append(executor.submit(lambda p: search_trend_by_keyword(*p), [[key_word], hours_in_trend]))
+            tasks.append(executor.submit(lambda p: GoogleTrendsApi().search_trend_by_keyword(*p), [[key_word], hours_in_trend]))
     futures.wait(tasks, return_when=futures.ALL_COMPLETED)
     return list(map(lambda a: a.result(), tasks))
 
@@ -2442,9 +2442,9 @@ if __name__ == '__main__':
     #     print(data)
     newwords = words[:]
     shuffle(newwords)
-    data = key_words_test(newwords, 38, 4)
+    data = key_words_test(newwords, 38, 100)
 
-    # data = search_trend_by_keyword(['luxury pen'], 38, debug=True)
+    # data = google_trends_api.search_trend_by_keyword(['luxury pen'], 38, debug=True)
 
     # run_test(100)
     # get_interest_over_time(['World Cup'], 160)
