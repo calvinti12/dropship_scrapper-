@@ -2,13 +2,86 @@ from __future__ import absolute_import, print_function, unicode_literals
 import json
 import pandas as pd
 from fake_useragent import UserAgent
+from random import shuffle
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from pytrends import exceptions
 
+proxies_new = [
+    "https://dropship:00005678@34.86.166.233:3128",
+    "https://dropship:00005678@35.245.187.21:3128",
+    "https://dropship:00005678@35.245.70.220:3128",
+    "https://dropship:00005678@35.245.49.168:3128",
+    "https://dropship:00005678@35.245.159.4:3128",
+    "https://dropship:00005678@34.86.78.245:3128",
+    "https://dropship:00005678@34.86.197.106:3128",
+    "https://dropship:00005678@35.221.39.40:3128",
+    "https://dropship:00005678@35.221.0.106:3128",
+    "https://dropship:00005678@34.86.168.167:3128",
+    "https://dropship:00005678@35.230.187.7:3128",
+    "https://dropship:00005678@34.86.42.59:3128",
+    "https://dropship:00005678@35.236.236.180:3128",
+    "https://dropship:00005678@34.86.253.219:3128",
+    "https://dropship:00005678@35.186.165.16:3128",
+    "https://dropship:00005678@34.86.192.68:3128",
+    "https://dropship:00005678@34.86.229.110:3128",
+    "https://dropship:00005678@35.199.23.197:3128",
+    "https://dropship:00005678@35.245.193.245:3128",
+    "https://dropship:00005678@35.221.4.247:3128",
+    "https://dropship:00005678@35.230.187.127:3128",
+    "https://dropship:00005678@35.245.32.91:3128",
+    "https://dropship:00005678@34.86.245.68:3128",
+    "https://dropship:00005678@35.245.72.122:3128",
+    "https://dropship:00005678@35.230.191.56:3128",
+    "https://dropship:00005678@35.245.67.52:3128",
+    "https://dropship:00005678@35.236.238.90:3128",
+    "https://dropship:00005678@34.86.91.169:3128",
+    "https://dropship:00005678@35.245.194.214:3128",
+    "https://dropship:00005678@35.245.101.67:3128",
+    "https://dropship:00005678@34.86.15.165:3128",
+    "https://dropship:00005678@34.86.64.11:3128",
+    "https://dropship:00005678@35.236.241.204:3128",
+    "https://dropship:00005678@35.245.154.202:3128",
+    "https://dropship:00005678@35.236.254.237:3128",
+    "https://dropship:00005678@34.86.148.217:3128",
+    "https://dropship:00005678@34.86.51.5:3128",
+    "https://dropship:00005678@34.86.126.224:3128",
+    "https://dropship:00005678@34.86.56.245:3128",
+    "https://dropship:00005678@35.194.76.60:3128",
+    "https://dropship:00005678@35.245.80.185:3128",
+    "https://dropship:00005678@34.86.104.14:3128",
+    "https://dropship:00005678@34.86.223.84:3128",
+    "https://dropship:00005678@34.86.71.157:3128",
+    "https://dropship:00005678@35.236.242.156:3128",
+    "https://dropship:00005678@34.86.228.216:3128",
+    "https://dropship:00005678@35.245.109.65:3128",
+    "https://dropship:00005678@35.245.96.246:3128",
+    "https://dropship:00005678@34.86.9.111:3128",
+    "https://dropship:00005678@34.86.193.245:3128",
+    "https://dropship:00005678@35.199.2.41:3128",
+    "https://dropship:00005678@35.230.169.4:3128",
+    "https://dropship:00005678@35.245.212.213:3128",
+    "https://dropship:00005678@34.86.59.49:3128",
+    "https://dropship:00005678@34.86.88.77:3128",
+    "https://dropship:00005678@34.86.239.177:3128",
+    "https://dropship:00005678@34.86.170.7:3128",
+    "https://dropship:00005678@35.230.185.198:3128",
+    "https://dropship:00005678@35.245.124.191:3128",
+    "https://dropship:00005678@35.199.23.45:3128",
+    "https://dropship:00005678@34.86.214.48:3128",
+    "https://dropship:00005678@34.86.124.12:3128",
+    "https://dropship:00005678@34.86.50.233:3128",
+    "https://dropship:00005678@35.236.207.120:3128",
+    "https://dropship:00005678@34.86.123.231:3128",
+    "https://dropship:00005678@34.86.221.234:3128",
+    "https://dropship:00005678@35.245.53.194:3128",
+    "https://dropship:00005678@34.86.192.18:3128",
+    "https://dropship:00005678@34.86.61.22:3128"
+]
 
-class TrendReqV2(object):
+
+class TrendReqV2:
     """
     Google Trends API
     """
@@ -24,7 +97,7 @@ class TrendReqV2(object):
     CATEGORIES_URL = 'https://trends.google.com/trends/api/explore/pickers/category'
     TODAY_SEARCHES_URL = 'https://trends.google.com/trends/api/dailytrends'
 
-    def __init__(self, hl='en-US', tz=360, geo='', timeout=(2, 5), proxies='',
+    def __init__(self, hl='en-US', tz=360, geo='', timeout=None,
                  retries=0, backoff_factor=0, requests_args=None):
         """
         Initialize default values for params
@@ -38,18 +111,17 @@ class TrendReqV2(object):
         self.geo = geo
         self.kw_list = list()
         self.timeout = timeout
-        self.proxies = proxies  # add a proxy option
+
+        shuffle(proxies_new)
+
+        self.proxies = proxies_new  # add a proxy option
         self.retries = retries
         self.backoff_factor = backoff_factor
-        self.proxy_index = 0
         self.requests_args = requests_args or {}
         self.cookies = self.GetGoogleCookie()
         # intialize widget payloads
         self.token_payload = dict()
         self.interest_over_time_widget = dict()
-        self.interest_by_region_widget = dict()
-        self.related_topics_widget_list = list()
-        self.related_queries_widget_list = list()
 
     def GetGoogleCookie(self):
         """
@@ -57,10 +129,7 @@ class TrendReqV2(object):
         Removes proxy from the list on proxy error
         """
         while True:
-            if len(self.proxies) > 0:
-                proxy = {'https': self.proxies[self.proxy_index]}
-            else:
-                proxy = ''
+            proxy = {'https': self.proxies[0]}
             try:
                 return dict(filter(lambda i: i[0] == 'NID', requests.get(
                     'https://trends.google.com/?geo={geo}'.format(
@@ -70,22 +139,9 @@ class TrendReqV2(object):
                     **self.requests_args
                 ).cookies.items()))
             except requests.exceptions.ProxyError:
-                print(f'Proxy error. Changing IP {self.proxies[self.proxy_index]}')
-                if len(self.proxies) > 1:
-                    self.proxies.remove(self.proxies[self.proxy_index])
-                else:
-                    print('No more proxies available. Bye!')
-                    raise
+                print(f'Proxy error. Changing IP {self.proxies[0]} self.kw_list {self.kw_list}')
+                shuffle(self.proxies)
                 continue
-
-    def GetNewProxy(self):
-        """
-        Increment proxy INDEX; zero on overflow
-        """
-        if self.proxy_index < (len(self.proxies) - 1):
-            self.proxy_index += 1
-        else:
-            self.proxy_index = 0
 
     def _get_data(self, url, method=GET_METHOD, trim_chars=0, **kwargs):
         """Send a request to Google and return the JSON response as a Python object
@@ -107,7 +163,7 @@ class TrendReqV2(object):
         s.headers.update({'accept-language': self.hl, 'User-Agent': UserAgent().random})
         if len(self.proxies) > 0:
             self.cookies = self.GetGoogleCookie()
-            s.proxies.update({'https': self.proxies[self.proxy_index]})
+            s.proxies.update({'https': self.proxies[0]})
         if method == TrendReqV2.POST_METHOD:
             response = s.post(url, timeout=self.timeout,
                               cookies=self.cookies, **kwargs, **self.requests_args)  # DO NOT USE retries or backoff_factor here
@@ -127,7 +183,7 @@ class TrendReqV2(object):
             # these have to be cleaned before being passed to the json parser
             content = response.text[trim_chars:]
             # parse json
-            self.GetNewProxy()
+            shuffle(self.proxies)
             return json.loads(content)
         else:
             # error
@@ -169,23 +225,12 @@ class TrendReqV2(object):
             trim_chars=4,
         )['widgets']
         # order of the json matters...
-        first_region_token = True
         # clear self.related_queries_widget_list and self.related_topics_widget_list
         # of old keywords'widgets
-        self.related_queries_widget_list[:] = []
-        self.related_topics_widget_list[:] = []
         # assign requests
         for widget in widget_dict:
             if widget['id'] == 'TIMESERIES':
                 self.interest_over_time_widget = widget
-            if widget['id'] == 'GEO_MAP' and first_region_token:
-                self.interest_by_region_widget = widget
-                first_region_token = False
-            # response for each term, put into a list
-            if 'RELATED_TOPICS' in widget['id']:
-                self.related_topics_widget_list.append(widget)
-            if 'RELATED_QUERIES' in widget['id']:
-                self.related_queries_widget_list.append(widget)
         return
 
     def interest_over_time(self):

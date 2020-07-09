@@ -2,14 +2,11 @@ import json
 import os
 import urllib.request
 from urllib.parse import urlencode
-from concurrent import futures
-from concurrent.futures import ThreadPoolExecutor
 
-from Google.google_trends_api import GoogleTrendsApi
+from Google.google_trends_api import get_interest_over_time
 from Scrappers.Shops.shopify_scraper import analysis_site_test
 from Scrappers.Ads.facebook_ad_library_scrapper import analysis_facebook_data_test
-from Naked.toolshed.shell import execute_js, muterun_js
-
+from Naked.toolshed.shell import execute_js
 
 STORE_SCRAPPER_LINK = "https://us-central1-dropshipscrapper.cloudfunctions.net/store_scrapper_"
 MYIPS_SCRAPPER_LINK = "https://node-scrapper-ufmnftzakq-uk.a.run.app/scrape_ips"
@@ -80,7 +77,7 @@ def get_trend(key_words, hours_in_trend):
     scrape_number = 1
     try:
         if DEBUG:
-            trends = GoogleTrendsApi().get_interest_over_time(key_words, hours_in_trend)
+            trends = get_interest_over_time(key_words, hours_in_trend)
             return trends
         else:
             post_fields = {'key_words': key_words,

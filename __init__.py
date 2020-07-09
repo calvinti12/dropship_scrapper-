@@ -3,25 +3,22 @@ import multiprocessing
 import os
 import random
 from random import shuffle
-import sys
 import traceback
 from concurrent import futures
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 
 from Class.site import Site
 from Database.atlas import MongoAtlas, evaluate_site, get_site_to_evaluate, add_site
 from Frontpages.evaluate import open_site
-from Google import google_trends_api
 from Google.google_function import get_ads_data_test, get_myips_link, get_trend
 from Google.google_function import get_facebook_data
 from Google.google_function import get_store_products
-from Google.google_function import scrape_my_ips
 from Google.google_sheets import GoogleSheets
 # from ScaleTest.requests_scale_test import run_test
-from Google.google_trends_api import GoogleTrendsApi
+from Google.google_trends_api import search_trend_by_keyword
 from Scrappers.Stats.awis_api_wrapper import get_rank
 
 global main_thread
@@ -2286,11 +2283,11 @@ def load_data(link):
         return tasks[0].result(), tasks[1].result(), tasks[2].result()
 
 
-def key_words_test(key_words, hours_in_trend, max_workers):
+def key_words_test(key_words, max_workers):
     tasks = []
     with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         for key_word in key_words:
-            tasks.append(executor.submit(lambda p: GoogleTrendsApi().search_trend_by_keyword(*p), [[key_word], hours_in_trend]))
+            tasks.append(executor.submit(lambda p: search_trend_by_keyword(*p), [[key_word]]))
     futures.wait(tasks, return_when=futures.ALL_COMPLETED)
     return list(map(lambda a: a.result(), tasks))
 
@@ -2443,7 +2440,7 @@ if __name__ == '__main__':
     #     print(data)
     newwords = words[:]
     shuffle(newwords)
-    data = key_words_test(newwords, 38, 10)
+    data = key_words_test(newwords, 1)
 
     # data = GoogleTrendsApi().search_trend_by_keyword(['supreme court'], 38, debug=True)
 
