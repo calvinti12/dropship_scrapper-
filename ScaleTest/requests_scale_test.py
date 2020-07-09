@@ -70,7 +70,7 @@ class TrendReqV2(object):
                     **self.requests_args
                 ).cookies.items()))
             except requests.exceptions.ProxyError:
-                print('Proxy error. Changing IP')
+                print(f'Proxy error. Changing IP {self.proxies[self.proxy_index]}')
                 if len(self.proxies) > 1:
                     self.proxies.remove(self.proxies[self.proxy_index])
                 else:
@@ -156,7 +156,8 @@ class TrendReqV2(object):
         self.token_payload['req'] = json.dumps(self.token_payload['req'])
         # get tokens
         self._tokens()
-        return self.interest_over_time
+        results = self.interest_over_time()
+        return results
 
     def _tokens(self):
         """Makes request to Google to get API tokens for interest over time, interest by region and related queries"""

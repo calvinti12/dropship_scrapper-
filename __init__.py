@@ -14,6 +14,7 @@ from flask import Flask, request, jsonify, render_template
 from Class.site import Site
 from Database.atlas import MongoAtlas, evaluate_site, get_site_to_evaluate, add_site
 from Frontpages.evaluate import open_site
+from Google import google_trends_api
 from Google.google_function import get_ads_data_test, get_myips_link, get_trend
 from Google.google_function import get_facebook_data
 from Google.google_function import get_store_products
@@ -2442,9 +2443,9 @@ if __name__ == '__main__':
     #     print(data)
     newwords = words[:]
     shuffle(newwords)
-    data = key_words_test(newwords, 38, 100)
+    data = key_words_test(newwords, 38, 10)
 
-    # data = google_trends_api.search_trend_by_keyword(['luxury pen'], 38, debug=True)
+    # data = GoogleTrendsApi().search_trend_by_keyword(['supreme court'], 38, debug=True)
 
     # run_test(100)
     # get_interest_over_time(['World Cup'], 160)
