@@ -2283,13 +2283,13 @@ def load_data(link):
         return tasks[0].result(), tasks[1].result(), tasks[2].result()
 
 
-def key_words_test(key_words, max_workers):
+def key_words_test(key_words, max_workers, debug=False):
     tasks = []
-    with futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+    with futures.ThreadPoolExecutor(max_workers=1) as executor:
         for key_word in key_words:
-            tasks.append(executor.submit(lambda p: search_trend_by_keyword(*p), [[key_word]]))
-    futures.wait(tasks, return_when=futures.ALL_COMPLETED)
-    return list(map(lambda a: a.result(), tasks))
+            tasks.append(executor.submit(lambda p: search_trend_by_keyword(*p), [key_word]))
+        futures.wait(tasks, return_when=futures.ALL_COMPLETED)
+        return list(map(lambda a: a.result(), tasks))
 
 
 def update_facebook_data(site_link):
@@ -2407,10 +2407,8 @@ def start_msips_scrapper():
 @app.route("/get_key_word_trend", methods=['POST'])
 def get_key_word_trend():
     key_words = request.form.getlist('key_words')
-    hours_in_trend = int(request.form.get('hours_in_trend'))
-    max_workers = int(request.form.get('max_workers'))
 
-    return jsonify(get_trend(key_words, hours_in_trend, max_workers))
+    return jsonify(get_trend(key_words))
 
 
 @app.route("/save_ips", methods=['POST'])
@@ -2438,11 +2436,9 @@ if __name__ == '__main__':
     # for key in words:
     #     data = search_trend_by_keyword([key], 38)
     #     print(data)
-    newwords = words[:]
-    shuffle(newwords)
-    data = key_words_test(newwords, 1)
-
-    # data = GoogleTrendsApi().search_trend_by_keyword(['supreme court'], 38, debug=True)
+    new_words = words[:]
+    shuffle(new_words)
+    key_words_test(new_words, 1, debug=False)
 
     # run_test(100)
     # get_interest_over_time(['World Cup'], 160)
