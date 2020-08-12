@@ -1,12 +1,11 @@
 # https://pypi.org/project/pytrends/#interest-by-region
-import json
 import random
 from random import shuffle
+import json
 import requests
 import pandas as pd
 from adtk.data import validate_series
 from adtk.detector import PersistAD
-from concurrent import futures
 import datetime
 
 # import matplotlib.pyplot as plt
@@ -16,24 +15,20 @@ from flask import jsonify
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-state_list = [
-    "CA",
-    "TX",
-    "NY",
-    "FL"
-]
-
 
 def get_key_word_trend(request):
-    key_words = request.form.getlist('key_words')
-    tasks = []
-    with futures.ThreadPoolExecutor(max_workers=None) as executor:
-        for key_word in key_words:
-            tasks.append(executor.submit(lambda p: search_trend_by_keyword(*p), [key_word, False]))
-        futures.wait(tasks, return_when=futures.ALL_COMPLETED)
-        results = list(map(lambda a: a.result(), tasks))
-        print(f'Results {results}')
-        return jsonify(results)
+    key_word = request.form.get('key_word')
+    geo = request.form.get('geo')
+    time_frame = request.form.get('time_frame')
+    window = int(request.form.get('window'))
+    lowest_zero_searches = int(request.form.get('lowest_zero_searches'))
+    is_monthly_trend, geo = is_trend(key_word, time_frame, geo, window, lowest_zero_searches, False)
+    return jsonify({'key_word': key_word, 'geo': geo, 'is_monthly_trend': is_monthly_trend})
+
+
+def local_trend(key_word, geo):
+    is_monthly_trend, geo = is_trend(key_word, geo=geo, window=21, debug=True)
+    return jsonify({'key_word': 'mens wallet', 'geo': geo, 'is_monthly_trend': is_monthly_trend})
 
 
 def get_daily_trend_values(data, anomalies, key_word, start_hour=36, end_hour=0):
@@ -50,30 +45,29 @@ def get_daily_trend_values(data, anomalies, key_word, start_hour=36, end_hour=0)
     return 0
 
 
-def get_is_monthly_trend_values(gts, anomalies, key_word):
+def get_is_monthly_trend_values(gts, anomalies, key_word, lowest_zero_searches):
     is_trend_by_anomaly = bool(anomalies[key_word].iloc[-1] >= 1)
     is_low_search_volumes = False
     number_of_zero_searches = gts.groupby(key_word).size().get(key=0)
     if number_of_zero_searches:
-        is_low_search_volumes = bool(number_of_zero_searches > 55)
+        is_low_search_volumes = bool(number_of_zero_searches > lowest_zero_searches)
     return is_trend_by_anomaly and is_low_search_volumes is False
 
 
-def is_trend(key_word, time_frame, geo='', window=7, debug=False):
-    py_trend = TrendReqV2(retries=2, geo=geo)
-    gts = py_trend.get_key_word_trend(key_word, time_frame)
-    # gts.at[gts.index[-1], key_word] = 100
-
-    if gts.empty:
-        return False, geo
-
-    s = validate_series(gts)
-    persist_ad = PersistAD(c=2.0, side='positive')
+def is_trend(key_word, time_frame='today 3-m', geo='', window=21, lowest_zero_searches=55, debug=False):
     try:
+        py_trend = TrendReqV2(retries=2, geo=geo)
+        gts = py_trend.get_key_word_trend(key_word, time_frame)
+        # gts.at[gts.index[-1], key_word] = 100
+        if gts.empty:
+            return False, geo
+
+        s = validate_series(gts)
+        persist_ad = PersistAD(c=2.0, side='positive')
         # Number of dates data points to check
         persist_ad.window = window
         anomalies = persist_ad.fit_detect(s)
-        is_monthly_trend = get_is_monthly_trend_values(gts, anomalies, key_word)
+        is_monthly_trend = get_is_monthly_trend_values(gts, anomalies, key_word, lowest_zero_searches)
         # if debug:
         #     sns.set(color_codes=True)
         #     plot(s, anomaly=anomalies, ts_linewidth=1, ts_markersize=5, anomaly_color='red')
@@ -83,49 +77,6 @@ def is_trend(key_word, time_frame, geo='', window=7, debug=False):
     except Exception as e:
         print(f'Error in {key_word} geo {geo} {e}')
         return False, geo
-
-
-def get_geo_tasks(executor, key_word):
-    tasks = []
-    for state in state_list:
-        tasks.append(executor.submit(is_trend, key_word, 'today 3-m', f'US-{state}', 7))
-    tasks.append(executor.submit(is_trend, key_word, 'today 3-m', f'US', 7))
-    return tasks
-
-
-def create_tasks_func(key_word):
-    with futures.ThreadPoolExecutor(max_workers=len(state_list) + 1) as executor:
-        tasks = get_geo_tasks(executor, key_word)
-        futures.wait(tasks, return_when=futures.ALL_COMPLETED)
-        results = list(map(lambda x: x.result(), tasks))
-        return results
-
-
-def create_func(key_word):
-    tasks = [is_trend(key_word, 'today 3-m', 'US', 7)]
-    for state in state_list:
-        tasks.append(is_trend(key_word, 'today 3-m', f'US-{state}', 7))
-    return tasks
-
-
-def get_interest_over_time(key_word, debug=False):
-    if debug:
-        result = [is_trend(key_word, 'today 3-m', 'US', 7, debug)]
-    else:
-        result = create_func(key_word)
-    return result
-
-
-def search_trend_by_keyword(key_word):
-    trends = get_interest_over_time(key_word, False)
-    found_trend = list(filter(lambda x: x[0], trends))
-    if len(found_trend) > 0:
-        print(f"key_word {key_word} is trending in {found_trend}")
-        found_trend = list(map(lambda x: x[1], found_trend))
-    else:
-        print(f"key_word {key_word} is not trending")
-
-    return {'key_word': key_word, 'geo': found_trend}
 
 
 class TrendReqV2:
@@ -448,8 +399,11 @@ class TrendReqV2:
             'US-FL': TrendReqV2.proxies_group_4[:len(TrendReqV2.proxies_group_4) - 14],
             'US': self.proxies_group_us
         }
-        self.proxy_index = random.randint(0, len(self.proxies_group_general[self.geo]) - 1)
-        self.proxies = self.proxies_group_general[self.geo]  # add a proxy option
+        self.proxy_group = self.geo
+        if self.proxy_group not in self.proxies_group_general:
+            self.proxy_group = list(random.choice(list(self.proxies_group_general.items())))[0]
+        self.proxy_index = random.randint(0, len(self.proxies_group_general[self.proxy_group]) - 1)
+        self.proxies = self.proxies_group_general[self.proxy_group]  # add a proxy option
         shuffle(self.proxies)
         self.current_proxy = {'https': self.proxies[self.proxy_index]}  # add a proxy option
         self.retries = retries
